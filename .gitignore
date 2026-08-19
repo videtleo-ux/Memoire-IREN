@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Données de runs — vivent hors OneDrive (C:\arene-runs), décision D7.
+# Seuls les logs consolidés seront versionnés, aux frontières de session.
+runs/
+*.jsonl.tmp
+
+# Stores mémoire Hermes clonés par run (isolation D3) — jamais versionnés :
+# ce sont des artefacts d'exécution, les snapshots M_s partent dans les logs.
+hermes-home-*/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
