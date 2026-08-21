@@ -30,11 +30,12 @@ Build terminé — 184 tests verts, zéro dépendance, aucun appel API dans la s
 - `src/journal/` + `tests/test_journal.py` — PRD 4 : schémas JSONL validés à l'écriture, détecteur dé-obfuscation/récitation, CSV dérivés, rejeu de complétude (44 tests).
 - `src/arbitre/` + `tests/test_arbitre.py` — PRD 3 : donnes dérivées et appariées, boucle session/manche, récap canonique, π̂ et mesures, plateau, reprise sur incident, intégrité de clôture, CLI de run (43 tests).
 
-Prochaine étape : le mini-run de bout en bout sur le modèle gratuit (`python -m arbitre`), premier appel API réel du projet. La documentation de référence :
+Pilote de calibrage terminé (2026-08-21) : modèle `openai/gpt-5.6-luna` effort `medium`, K = 150, fenêtre ICL 13 000 tokens, budget borné 41-63 $. **Prochaine étape : audit indépendant (`AUDIT.md`), puis la campagne.** La documentation de référence :
 
 - `spec-build-arene-kuhn(1).md` — the original build specification (French). Authority on *what* to build; every clause is a fixed design decision.
 - `prd/00-vue-densemble.md` … `prd/04-logging-analyse.md` — the PRDs (French). Authority on *how* to build it: architecture, fixed cross-cutting decisions D1–D8, pinned parameters (K=200, N=3, obfuscated lexicon), analytic test oracle, schemas.
 - `CONTEXT.md` — living context: pilot constraints, verified environment findings (Hermes Agent install, its memory-persistence pitfalls, OneDrive pitfall), decisions made in discussion. **Read this first in any new session.**
+- `AUDIT.md` — adversarial audit brief written before the campaign: the two silent-contamination bugs found during calibration, the author's declared blind spots, and the four targets worth attacking. Read it before touching the harness/Hermes boundary.
 - `PROGRESS.md` — phase-by-phase status, open/blocking points, next action.
 
 **Before implementing, read (in order): `CONTEXT.md`, `prd/00-vue-densemble.md`, then the PRD of the component you're touching, with the spec as backstop.** Do not re-derive the design from first principles. Key resolved points to not re-litigate: the GTO constant dispute is settled (J1 calls with the middle card at α+1/3 = 2/3, self-verified by the `exploitability(GTO)=0` test — PRD 1 §4); all three memory conditions go through `hermes -z` with a dedicated `HERMES_HOME` per run; intra-session memory freezing is enforced by the referee via file snapshot/restore because Hermes persists memory writes immediately; deals are **derived** from the campaign seed (a pure function of `(graine, r, s, k)`), never drawn from a running generator — that is what makes the three conditions byte-for-byte paired.
