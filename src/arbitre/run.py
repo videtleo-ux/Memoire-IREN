@@ -67,8 +67,13 @@ from moteur import (
 
 from . import alea, etat as etat_module, integrite, mesure, recap
 
-#: Manches par série (paramètre figé du PRD 0 §3, revalidé au pilote).
-K_DEFAUT = 200
+#: Manches par série. Le PRD 0 §3 partait de 200 ; ramené à 150 au pilote du
+#: 2026-08-21 (levier prévu par le PRD 3 §7.3), ce qui retire 25 % du coût et
+#: de la durée de la campagne. La stabilité de π̂ à 150 se vérifie par
+#: sous-échantillonnage d'une série de 200 — les donnes étant dérivées de
+#: (graine, r, s, k), les 150 premières manches d'une série de 200 *sont* la
+#: série de 150, à l'octet près.
+K_DEFAUT = 150
 
 #: Séries par run (PRD 3 §3). SM n'a rien à accumuler : 3 points suffisent à
 #: établir le plancher plat et sa variance. ICL et AE s'arrêtent au plateau,
@@ -78,7 +83,13 @@ K_DEFAUT = 200
 #: pour distinguer plat, dents de scie et escalier même si la courbe se
 #: stabilise vite.
 SERIES_SM = 3
-SERIES_MAX = 20
+
+#: Plafond abaissé de 20 à 16 au pilote du 2026-08-21 (levier du PRD 3 §9).
+#: On borne le coût **sans toucher à la règle d'arrêt** : le plateau reste
+#: constaté (8 séries minimum, plus 2 de marge) et non décrété. Transformer
+#: le plafond en compte fixe reviendrait à remplacer un critère scientifique
+#: par une contrainte budgétaire, ce qu'il faudrait alors écrire comme tel.
+SERIES_MAX = 16
 
 #: Tentatives d'une même manche avant abandon du run. Une manche échoue quand
 #: le harnais renonce après ses propres relances (réseau, timeout) : on la
