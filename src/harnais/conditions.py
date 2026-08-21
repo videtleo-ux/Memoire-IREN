@@ -86,6 +86,8 @@ class Decision:
     tokens_sortie: int | None = None
     #: Part invisible de la sortie (chaîne de pensée facturée, jamais rendue).
     tokens_raisonnement: int | None = None
+    #: Entrée servie depuis le cache de préfixe (facturée ~10x moins).
+    tokens_cache_lus: int | None = None
     modele: str | None = None
     invocations: int = 1
 
@@ -183,6 +185,7 @@ class Harnais:
         latence = reponse.latence_ms
         tokens_in, tokens_out = reponse.tokens_entree, reponse.tokens_sortie
         tokens_rais = reponse.tokens_raisonnement
+        tokens_cache = reponse.tokens_cache_lus
         flags: list[str] = list(self._detecter_ecriture())
         flags.extend(_pseudo_outil(reponse.texte))
 
@@ -194,6 +197,7 @@ class Harnais:
             tokens_in = _additionner(tokens_in, relance.tokens_entree)
             tokens_out = _additionner(tokens_out, relance.tokens_sortie)
             tokens_rais = _additionner(tokens_rais, relance.tokens_raisonnement)
+            tokens_cache = _additionner(tokens_cache, relance.tokens_cache_lus)
             flags.extend(self._detecter_ecriture())
             flags.extend(_pseudo_outil(relance.texte))
             action, parsing = extraire_action(relance.texte, infoset.actions_legales)
@@ -214,6 +218,7 @@ class Harnais:
             tokens_entree=tokens_in,
             tokens_sortie=tokens_out,
             tokens_raisonnement=tokens_rais,
+            tokens_cache_lus=tokens_cache,
             modele=reponse.modele,
             invocations=invocations,
         )

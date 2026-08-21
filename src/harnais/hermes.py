@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -43,6 +44,31 @@ TIMEOUT_DEFAUT = 180
 #: jamais silencieusement sautée (PRD 2 §3).
 RELANCES_DEFAUT = 2
 
+#: Échecs de fournisseur qu'Hermes rend **sur stdout avec un code retour 0**.
+#: Découvert le 2026-08-21 en basculant sur un modèle payant sans crédits :
+#: `hermes -z` a imprimé « API call failed after 3 retries: HTTP 404… » et
+#: s'est terminé normalement. Sans ce filet, l'arène prend le message d'erreur
+#: pour une réponse du modèle : le parsing échoue, l'action passive est
+#: imposée, et la série se remplit de manches `action_par_defaut` **loguées
+#: comme des données**. Un run entier peut ainsi passer pour valide.
+#:
+#: Les motifs sont ancrés en tête de sortie : le modèle, lui, ne commence
+#: jamais sa réponse par « API call failed ».
+_MOTIFS_ECHEC_FOURNISSEUR = (
+    re.compile(r"^\s*API call failed", re.IGNORECASE),
+    re.compile(r"^\s*(?:Error|Erreur)\s*:\s*HTTP\s+\d{3}", re.IGNORECASE),
+    re.compile(r"requires available credits", re.IGNORECASE),
+    re.compile(r"^\s*Rate limit(?:ed| exceeded)", re.IGNORECASE),
+)
+
+
+def echec_fournisseur(texte: str) -> str | None:
+    """Rend le message d'erreur si la sortie est un échec de fournisseur déguisé."""
+    for motif in _MOTIFS_ECHEC_FOURNISSEUR:
+        if motif.search(texte or ""):
+            return (texte or "").strip().splitlines()[0][:300]
+    return None
+
 
 @dataclass(frozen=True)
 class Reponse:
@@ -60,6 +86,12 @@ class Reponse:
     #: la quantité qui commande le coût **et** la durée de la campagne, et
     #: elle serait invisible sans ce champ.
     tokens_raisonnement: int | None = None
+    #: Entrée servie depuis le cache de préfixe du fournisseur, facturée ~10x
+    #: moins cher. Une série d'arène rejoue 200 fois le même préfixe
+    #: `[RÈGLES] + [SLOT]` : c'est le principal levier de coût de la campagne,
+    #: et il serait invisible sans ce champ.
+    tokens_cache_lus: int | None = None
+    tokens_cache_ecrits: int | None = None
     #: Appels réellement émis par la boucle d'agent pour cette invocation.
     #: Vaut 1 en configuration d'arène ; au-delà, la boucle aurait rebouclé
     #: et la manche coûterait plus que prévu.
@@ -77,6 +109,7 @@ class Reponse:
             "in": self.tokens_entree,
             "out": self.tokens_sortie,
             "raisonnement": self.tokens_raisonnement,
+            "cache_lus": self.tokens_cache_lus,
         }
 
 
@@ -190,6 +223,9 @@ class InvocateurHermes:
             erreur = f"code retour {acheve.returncode} : {(acheve.stderr or '').strip()[:400]}"
         elif not texte.strip():
             erreur = "sortie vide"
+        elif (message := echec_fournisseur(texte)) is not None:
+            # Code retour 0, sortie non vide, et pourtant rien du modèle.
+            erreur = f"échec fournisseur rendu sur stdout : {message}"
 
         return Reponse(
             texte=texte,
@@ -212,6 +248,8 @@ def _usage(rapport: Path) -> Mapping[str, object]:
         "tokens_entree": None,
         "tokens_sortie": None,
         "tokens_raisonnement": None,
+        "tokens_cache_lus": None,
+        "tokens_cache_ecrits": None,
         "appels_api": None,
         "modele": None,
         "cout_usd": None,
@@ -224,6 +262,8 @@ def _usage(rapport: Path) -> Mapping[str, object]:
         "tokens_entree": donnees.get("input_tokens"),
         "tokens_sortie": donnees.get("output_tokens"),
         "tokens_raisonnement": donnees.get("reasoning_tokens"),
+        "tokens_cache_lus": donnees.get("cache_read_tokens"),
+        "tokens_cache_ecrits": donnees.get("cache_write_tokens"),
         "appels_api": donnees.get("api_calls"),
         "modele": donnees.get("model"),
         "cout_usd": donnees.get("estimated_cost_usd"),

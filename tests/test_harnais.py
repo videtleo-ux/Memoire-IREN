@@ -78,6 +78,38 @@ class InvocateurFactice:
         return [prompt for prompt, _ in self.appels]
 
 
+SORTIES_DECHEC = [
+    # Relevé le 2026-08-21 en basculant sur un modèle payant sans crédits :
+    # `hermes -z` termine avec le code 0 et imprime l'erreur sur stdout.
+    "API call failed after 3 retries: HTTP 404: Model 'openai/gpt-5.6-luna' "
+    "requires available credits. Your account balance is too low.",
+    "Error: HTTP 429: too many requests",
+    "Rate limit exceeded, retry later",
+]
+
+
+@pytest.mark.parametrize("texte", SORTIES_DECHEC)
+def test_h_echec_fournisseur_rendu_sur_stdout_detecte(texte):
+    """Un échec de fournisseur déguisé en réponse ne doit jamais passer pour
+    une décision de l'agent : sans ce filet, la série se remplit de manches
+    `action_par_defaut` **loguées comme des données**."""
+    from harnais.hermes import echec_fournisseur
+
+    assert echec_fournisseur(texte) is not None
+
+
+def test_h_vraie_reponse_de_modele_non_prise_pour_un_echec():
+    """Le filet ne doit pas mordre sur une délibération légitime."""
+    from harnais.hermes import echec_fournisseur
+
+    for texte in [
+        "Mon sceau Rhun domine les deux autres.\nACTION: engager",
+        "Je retiens, l'adversaire n'a pas engagé.\nACTION: retenir",
+        "Le résultat de l'épreuve précédente a échoué à m'éclairer.\nACTION: couvrir",
+    ]:
+        assert echec_fournisseur(texte) is None, texte
+
+
 def _store(tmp_path: Path, nom: str = "store") -> Store:
     return creer_store(tmp_path / nom)
 

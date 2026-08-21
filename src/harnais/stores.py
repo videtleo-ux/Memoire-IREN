@@ -42,10 +42,18 @@ TOOLSET_SANS_OUTIL = "context_engine"
 #: pouvoir écrire ses notes avec son outil natif.
 TOOLSET_MEMOIRE = "memory"
 
-#: Modèle par défaut du pilote — le gratuit du catalogue Nous Portal, sur
-#: lequel se fait tout le débogage du harnais (PRD 2 §2). Le modèle de
-#: campagne est arrêté au pilote de calibrage et figé dans `CONTEXT.md`.
-MODELE_DEFAUT = "tencent/hy3:free"
+#: Modèle de campagne, arrêté au pilote du 2026-08-21 (cf. `CONTEXT.md`).
+#:
+#: `tencent/hy3:free` a servi à déboguer le harnais à coût nul, mais il
+#: **ignore le contrôle d'effort de raisonnement** : ~4 000 tokens de chaîne
+#: de pensée par manche, non réductibles, invisibles dans les journaux. Luna
+#: l'honore (`none` … `max`), coûte 0,20 $/1,20 $ par million, et reste à
+#: 2-3 points de la tête de la famille GPT-5.6 sur les tâches agentiques.
+#:
+#: ⚠️ Ce défaut est **payant**. Le modèle gratuit reste accessible pour la
+#: mise au point : `--modele tencent/hy3:free`.
+MODELE_DEFAUT = "openai/gpt-5.6-luna"
+MODELE_GRATUIT = "tencent/hy3:free"
 FOURNISSEUR_DEFAUT = "nous"
 BASE_URL_DEFAUT = "https://inference-api.nousresearch.com/v1"
 
