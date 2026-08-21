@@ -143,6 +143,34 @@ def _environnement(store: Store) -> Mapping[str, str]:
     return env
 
 
+#: Répertoire de travail neutre, créé sous le store et laissé **vide**.
+DOSSIER_TRAVAIL = "cwd-neutre"
+
+
+def repertoire_neutre(store: Store) -> Path:
+    """Répertoire de travail servi à Hermes — vide, et il doit le rester.
+
+    ⚠️ Faille de validité découverte le 2026-08-21, la plus grave du projet.
+    Hermes explore le répertoire courant à la recherche de consignes d'agent
+    (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`…) et **les injecte dans son
+    prompt système**. Or l'arène était lancée depuis le dépôt : `CLAUDE.md`
+    y décrit le jeu réel, la constante d'équilibre, et l'exploitation de
+    chaque bot, nommément. Mesuré par `hermes prompt-size` : 11 633 octets de
+    consignes du dépôt dans le prompt système, contre 0 depuis un répertoire
+    vide.
+
+    Autrement dit, l'agent recevait le corrigé de l'expérience à chaque
+    manche. Tout ce qui a été joué avant ce correctif est à rejouer, et les
+    « reconnaissances du jeu » observées ne prouvaient rien : il lisait.
+
+    Le répertoire vit sous le store du run, donc il est isolé comme lui, et
+    l'arbitre ne doit jamais y écrire.
+    """
+    chemin = store.chemin / DOSSIER_TRAVAIL
+    chemin.mkdir(parents=True, exist_ok=True)
+    return chemin
+
+
 @dataclass
 class InvocateurHermes:
     """Invocateur réel, lié au store d'un run."""
@@ -166,13 +194,14 @@ class InvocateurHermes:
             self.parametres.fournisseur,
         ]
         env = _environnement(self.store)
+        travail = repertoire_neutre(self.store)
         derniere: Reponse | None = None
 
         for tentative in range(1, self.relances + 2):
             with tempfile.TemporaryDirectory(prefix="arene-usage-") as tmp:
                 rapport = Path(tmp) / "usage.json"
                 commande = commande_base + ["--usage-file", str(rapport)]
-                reponse = self._executer(commande, env, rapport, tentative)
+                reponse = self._executer(commande, env, rapport, tentative, travail)
             if reponse.ok:
                 return reponse
             derniere = reponse
@@ -186,12 +215,14 @@ class InvocateurHermes:
         env: Mapping[str, str],
         rapport: Path,
         tentative: int,
+        travail: Path,
     ) -> Reponse:
         debut = time.monotonic()
         try:
             acheve = subprocess.run(
                 commande,
                 env=dict(env),
+                cwd=str(travail),  # jamais le dépôt : cf. `repertoire_neutre`
                 capture_output=True,
                 text=True,
                 encoding="utf-8",

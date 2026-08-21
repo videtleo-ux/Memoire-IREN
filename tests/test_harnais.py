@@ -78,6 +78,39 @@ class InvocateurFactice:
         return [prompt for prompt, _ in self.appels]
 
 
+def test_h_hermes_tourne_dans_un_repertoire_neutre(tmp_path, monkeypatch):
+    """Hermes lit les consignes d'agent du répertoire courant (`AGENTS.md`,
+    `CLAUDE.md`…) et **les injecte dans son prompt système**. Lancée depuis le
+    dépôt, l'arène servait donc à l'agent un `CLAUDE.md` qui nomme le jeu
+    réel, donne la constante d'équilibre et décrit l'exploitation de chaque
+    bot. Mesuré : 11 633 octets de consignes du dépôt dans le prompt système,
+    contre 0 depuis un répertoire vide.
+
+    Le sous-processus doit tourner dans un répertoire **vide**, sous le store.
+    """
+    import subprocess
+
+    from harnais.hermes import DOSSIER_TRAVAIL, InvocateurHermes, repertoire_neutre
+
+    store = creer_store(tmp_path / "store")
+    (tmp_path / "CLAUDE.md").write_text("le jeu est un poker de Kuhn", encoding="utf-8")
+
+    neutre = repertoire_neutre(store)
+    assert neutre == store.chemin / DOSSIER_TRAVAIL
+    assert neutre.is_dir() and not any(neutre.iterdir()), "le répertoire doit rester vide"
+
+    vus: dict[str, object] = {}
+
+    def faux_run(commande, **kw):
+        vus.update(kw)
+        raise OSError("stop")  # on ne veut que le cwd, pas l'appel
+
+    monkeypatch.setattr(subprocess, "run", faux_run)
+    InvocateurHermes(store, executable="hermes")("prompt", TOOLSET_SANS_OUTIL)
+
+    assert vus["cwd"] == str(neutre), "le sous-processus ne doit jamais voir le dépôt"
+
+
 SORTIES_DECHEC = [
     # Relevé le 2026-08-21 en basculant sur un modèle payant sans crédits :
     # `hermes -z` termine avec le code 0 et imprime l'erreur sur stdout.
