@@ -80,6 +80,35 @@ Premier appel API réel du projet : 1 série, K = 20, Station, SM, `tencent/hy3:
 
 **Cinq modèles gratuits au catalogue, pas un seul.** La campagne complète est donc réalisable à coût nul ; la contrainte réelle devient le **temps**, pas l'argent. Le levier principal sur le coût comme sur la durée est l'effort de raisonnement (`--reasoning`, exposé au CLI depuis le 2026-08-21, `medium` par défaut) : il commande les tokens de sortie, qui représentent 60 % du volume et 90 % du prix chez les modèles payants.
 
+## 4 quinquies. Pilote complet du 2026-08-21 (soirée) — sur `gpt-5.6-luna`
+
+**⚠️ Piège n°7 — Hermes injectait `CLAUDE.md` du dépôt dans son prompt système.** La faille de validité la plus grave du projet. Hermes explore le répertoire courant à la recherche de consignes d'agent (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`) et les y verse. L'arène tournait depuis le dépôt : l'agent recevait à chaque manche un document qui nomme le jeu réel, donne la constante d'équilibre et **décrit l'exploitation de chaque bot**. Mesuré par `hermes prompt-size` : 11 633 octets, contre 0 depuis un répertoire vide. Corrigé — le sous-processus tourne dans `<store>/cwd-neutre`. **Conséquence rétroactive : les 45 drapeaux de dé-obfuscation du premier mini-run ne prouvaient rien, l'agent lisait le corrigé.** Après correctif : 0 drapeau de dé-obfuscation sur 200 sorties.
+
+**⚠️ Piège n°8 — `hermes -z` rend les échecs de fournisseur sur stdout avec le code retour 0.** Un manque de crédits imprimait « API call failed… » que le harnais prenait pour une réponse du modèle. Sans détection, une campagne entière se remplit d'`action_par_defaut` loguées comme des données. Corrigé (`harnais.hermes.echec_fournisseur`).
+
+**Le cache de préfixe ne mord jamais.** Trois appels au préfixe identique : 4 038 tokens écrits en cache, 0 lu, à chaque fois. Le levier « cache » est mort ; la fermeture de la fuite l'a remplacé avantageusement (entrée par appel : 4 041 → 1 626 tokens).
+
+**L'effort de raisonnement ne change presque rien sur Luna** (200 manches, mêmes donnes) : `low` → sortie 445 tokens, écart 0,248 ; `medium` → 427 tokens, écart 0,227. Même coût, même latence, même durée. **Donc `medium` par défaut** : il retire l'objection « le modèle a été bridé » sans rien coûter. (Sur `tencent/hy3:free`, le paramètre était purement ignoré.)
+
+**Résultats de mesure, `Station`, réplication 1 :**
+
+| Condition | K | séries | écart par série |
+|---|---|---|---|
+| SM | 200 | 1 | 0,248 (`low`) · 0,227 (`medium`) |
+| ICL | 20 | 3 | 0,333 → 0,278 → 0,190 |
+| AE | 20 | 3 | 0,111 → **0,000** → **0,000** |
+
+- **Pas d'effet plafond** : la ligne de base SM est à ~0,23, loin de 0. Il reste toute la place pour observer une adaptation.
+- **AE atteint la meilleure réponse exacte après une seule réflexion**, et ses notes identifient Station explicitement (« stratégie parfaitement passive et déterministe… engager avec Rhun »). Une seule entrée mémoire, tenue à jour sur trois frontières, jamais saturée.
+- **Luna ne value-bet pas de façon fiable** : il n'engage Rhun que 43–67 % du temps contre un adversaire qui couvre toujours, à tous les niveaux d'effort. C'est le motif d'*endgame misdetection* documenté par GTBENCH — matière pour H4.
+- Prudence : ICL/AE à K = 20, soit n ≈ 3 par info-set. Direction, pas mesure.
+
+**K = 150 validé sur pièces** : |écart(K=150) − écart(K=200)| = **0,0032**, quinze fois sous le seuil de 0,05 du PRD 3 §7.3.
+
+**Coût réel** : 0,172 $ la série de 200 manches, soit 0,86 millième de dollar par décision. Latence 11 s/manche, 40 min la série. Parsing **260/260** sur les quatre runs.
+
+**⚠️ Point de méthode ouvert — la fenêtre ICL.** Le récap pèse 109 caractères par manche, donc 4 074 tokens pour une série de K = 150. La fenêtre de 6 000 tokens évinçant par séries entières, elle n'en contiendrait plus **qu'une seule** : la condition ICL deviendrait « la série précédente, un point c'est tout », et le « dents de scie » attendu disparaîtrait faute d'empilement à évincer. À trancher avant campagne : élargir la fenêtre, l'assumer et la documenter, ou revoir K.
+
 ## 5. Où en est-on / où va-t-on
 
 L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).

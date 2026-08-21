@@ -88,7 +88,12 @@ class ParametresModele:
     modele: str = MODELE_DEFAUT
     fournisseur: str = FOURNISSEUR_DEFAUT
     base_url: str = BASE_URL_DEFAUT
-    #: Niveau servi aux K manches d'une série.
+    #: Niveau servi aux K manches d'une série. Mesuré au pilote du
+    #: 2026-08-21 sur 200 manches à donnes identiques : `low` et `medium`
+    #: donnent le même volume de sortie (445 vs 427 tokens), la même latence
+    #: et le même coût sur Luna. `medium` jouant marginalement mieux
+    #: (écart 0,227 vs 0,248), il n'y a aucune raison d'économiser ici — et
+    #: cela retire l'objection « le modèle a été bridé ».
     reasoning_effort: str = "medium"
     #: Niveau servi à l'unique réflexion de frontière (condition AE).
     reasoning_reflexion: str = "medium"

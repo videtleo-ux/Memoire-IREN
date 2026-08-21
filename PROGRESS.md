@@ -27,13 +27,16 @@ Dernière mise à jour : 2026-08-21. Convention : ✅ fait · 🔄 en cours · �
 - ✅ Arbitre & orchestration (PRD 3) — `src/arbitre/`, `tests/test_arbitre.py`, **43 tests**. Donnes *dérivées* de la graine de campagne (fonction pure de `(graine, r, s, k)`, donc appariées entre conditions par construction), flux du bot seedé par manche, boucle session/manche avec gel avant chaque manche, manche atomique (rejeu à donne identique sur `ErreurHarnais`), récap canonique, π̂ + mesures exactes, critère de plateau automatisé, état de run et reprise sur incident, vérifications d'intégrité de clôture, CLI `python -m arbitre`.
 - ✅ Test de bout en bout : mini-run `SM-station-r1` (1 série, K = 20, Station, SM, `tencent/hy3:free`) exécuté le 2026-08-21. Intégrité verte, rejeu complet, **100 % de parsing**, positions 10/10, canari et gel prouvés sur le binaire réel, écart = 1/18 exact. Quatre constats consignés en `CONTEXT.md` §4 quater.
 
-Total : **194 tests verts en ~8 s**, toujours sans dépendance ni appel API dans la suite.
+Total : **200 tests verts en ~8 s**, toujours sans dépendance ni appel API dans la suite.
 
-## Phase 3 — Pilote de calibrage (⬜)
+## Phase 3 — Pilote de calibrage (🔄 quasi terminé, 2026-08-21)
 
-- ⬜ Choix du modèle définitif (shortlist PRD 2) : taux de parsing, coût/manche, latence
-- ⬜ Validation de K=200 (stabilité de π̂) ou ajustement
-- ⬜ Estimation du coût total de la campagne → go/no-go sur le budget
+- ✅ **Modèle arrêté** : `openai/gpt-5.6-luna`, effort `medium`. Parsing **260/260** sur 4 runs réels. `tencent/hy3:free` écarté (ignore le contrôle d'effort, 4 000 tokens de raisonnement non réductibles, 5× plus lent).
+- ✅ **K = 150 validé sur pièces** : |écart(150) − écart(200)| = 0,0032, quinze fois sous le seuil du PRD 3 §7.3.
+- ✅ **Coût projeté** : 41 $ attendu (plateau à 10 séries), 63 $ au pire (plafond 16). Mesuré : 0,172 $ la série de 200 manches.
+- ✅ **Les trois conditions tournent pour de vrai.** AE atteint la meilleure réponse exacte après une seule réflexion ; ICL descend plus lentement ; SM plafonne à ~0,23 — pas d'effet plafond, la marge de mesure existe.
+- ✅ **Deux failles majeures trouvées et corrigées** (pièges n°7 et n°8, `CONTEXT.md` §4 quinquies) : `CLAUDE.md` injecté dans le prompt de l'agent, et les échecs de fournisseur pris pour des réponses.
+- ⚠️ **À trancher avant campagne** : la fenêtre ICL ne contiendrait qu'une seule série à K = 150.
 - ⬜ Installation + vérification d'Hermes Agent sur le Mac M2 (si campagne multi-machines confirmée)
 
 ## Phase 4 — Campagne (⬜)
@@ -55,7 +58,7 @@ Total : **194 tests verts en ~8 s**, toujours sans dépendance ni appel API dans
 |---|---|---|
 | Papier Loriente & Diez à transmettre | Léo | Aucun sur le build (D6) ; manque un recoupement citable dans le mémoire |
 | Hermes non installé sur le Mac M2 | Léo | Campagne mono-machine (plus lente), pas d'invalidation |
-| Modèle définitif non choisi | Pilote (Phase 3) | Bloque le lancement de la campagne, pas le build |
+| Fenêtre ICL : une seule série y tient à K=150 | Léo | Le « dents de scie » attendu d'ICL disparaît faute d'empilement à évincer |
 
 ## Journal des sessions de travail
 
@@ -65,3 +68,4 @@ Total : **194 tests verts en ~8 s**, toujours sans dépendance ni appel API dans
 | 2026-08-19 | **Phase 2, étape 1 : moteur de jeu implémenté et testé** (`src/moteur/`, 41 tests T1–T9 verts). Constante GTO 2/3 confirmée par T2 (la variante 1/3 est bien exploitable). Formules en α de T5/T6 corrigées → PRD 1 v1.1 §7.1. |
 | 2026-08-21 | **Phase 2, étapes 2 et 3 : harnais mémoire (PRD 2) et logging (PRD 4)** (`src/harnais/`, `src/journal/`, 100 tests de plus, 141 au total). Clés de config Hermes relevées dans son code source et **vérifiées sur machine** ; canari d'isolation réel passé. Trois constats à retenir : `context_engine` est le toolset « zéro outil » utilisable (`memory` en expose exactement un) ; le modèle gratuit hallucine des appels d'outils quand on ne lui en donne aucun (drapeau `sortie_pseudo_outil`) ; l'auto-déclaration d'outils par l'agent n'est pas fiable, le canari vérifie donc un fichier, pas une réponse. |
 | 2026-08-21 | **Phase 2, étape 4 : arbitre & orchestration (PRD 3)** (`src/arbitre/`, 43 tests de plus, 184 au total). Le build est terminé : aucune couche ne manque entre la graine de campagne et le CSV d'analyse. Quatre choix d'implémentation à retenir (détail en `CONTEXT.md` §4 ter) : donnes **dérivées** au lieu de tirées ; manche **atomique** (les tours ne sont écrits qu'à la fin de la manche) ; tours d'une série interrompue **déplacés** vers `turns.abandonnes.jsonl` ; π̂ estimée depuis les lignes de log déjà écrites, via `journal.estimer_pi_hat`. **Prochaine action : le mini-run de bout en bout** — `PYTHONPATH=src python -m arbitre --condition SM --bot Station --K 20 --series 1`, sur le modèle gratuit, premier appel API réel du projet. |
+| 2026-08-21 | **Phase 3 : pilote de calibrage complet** sur `openai/gpt-5.6-luna`. Sept runs réels, les trois conditions éprouvées. **Deux failles majeures trouvées et corrigées** : Hermes injectait `CLAUDE.md` du dépôt — donc le corrigé de l'expérience — dans son prompt système à chaque manche (piège n°7) ; et `hermes -z` rendait les échecs de fournisseur sur stdout avec le code retour 0, où le harnais les prenait pour des réponses du modèle (piège n°8). Modèle et paramètres arrêtés, K=150 validé sur pièces, budget borné à 41-63 $. **AE atteint la meilleure réponse exacte après une seule réflexion.** Détail en `CONTEXT.md` §4 quinquies. **Prochaine action : trancher la fenêtre ICL, puis lancer la campagne.** |
