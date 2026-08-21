@@ -26,6 +26,7 @@ Ce que l'arbitre ajoute, et que personne d'autre ne fait :
 
 from __future__ import annotations
 
+import hashlib
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -117,6 +118,31 @@ def identifiant(condition: Condition, bot: str, replication: int) -> str:
     return f"{condition.value}-{bot.lower()}-r{replication}"
 
 
+def code_dossier(graine: str, run_id: str) -> str:
+    """Nom de dossier **opaque** du run — le `run_id` ne doit jamais y figurer.
+
+    ⚠️ Faille de validité relevée à l'audit du 2026-08-22 (constat C1), même
+    famille que la fuite `CLAUDE.md` du pilote : Hermes insère le chemin de
+    `HERMES_HOME` **en clair dans son prompt système**, deux fois — la ligne
+    « Current working directory: … » (`agent/prompt_builder.py`) et le bloc
+    « Active Hermes profile: … » (`agent/system_prompt.py`) — et aucune des
+    deux n'est désactivable. Un store nommé `…\\SM-station-r1\\hermes-home`
+    servait donc à l'agent, à chaque manche, le nom de son adversaire —
+    « station » et « over-folder » énoncent littéralement l'exploitation
+    attendue — et la condition mémoire. Invisible dans les résultats :
+    `vue_servie` ne logue pas le prompt système, le raisonnement n'est jamais
+    restitué, et le détecteur de dé-obfuscation ne connaît pas ces termes.
+
+    Le nom est dérivé, pas tiré : `sha256(graine | run_id)` tronqué — la
+    reprise d'un run retrouve son dossier sans état annexe. La correspondance
+    humaine reste lisible partout ailleurs : chaque ligne de log et
+    `etat_run.json` portent le `run_id`, et le témoin d'isolation posé dans le
+    store le nomme aussi.
+    """
+    empreinte = hashlib.sha256(f"{graine}|{run_id}".encode("utf-8")).hexdigest()[:12]
+    return f"run-{empreinte}"
+
+
 @dataclass(frozen=True)
 class ConfigRun:
     """Tout ce qui définit un run, et rien de ce qui en dépend."""
@@ -142,8 +168,14 @@ class ConfigRun:
         return identifiant(self.condition, self.bot, self.replication)
 
     @property
+    def code_dossier(self) -> str:
+        return code_dossier(self.graine, self.run_id)
+
+    @property
     def dossier(self) -> Path:
-        return Path(self.racine) / self.run_id
+        # Jamais `racine / run_id` : le chemin du store remonte dans le prompt
+        # système d'Hermes, et le run_id nomme le bot — cf. `code_dossier`.
+        return Path(self.racine) / self.code_dossier
 
     @property
     def dossier_logs(self) -> Path:
@@ -248,7 +280,14 @@ class Arbitre:
         tours: list[Mapping[str, Any]] = []
         positions = {"J1": 0, "J2": 0}
         defauts = {"actions_par_defaut": 0, "relances": 0, "erreurs_harnais": 0}
-        tokens = {"in": 0, "out": 0, "raisonnement": 0, "cache_lus": 0, "cout_usd": 0.0}
+        tokens = {
+            "in": 0,
+            "out": 0,
+            "raisonnement": 0,
+            "cache_lus": 0,
+            "cache_ecrits": 0,
+            "cout_usd": 0.0,
+        }
         drapeaux: list[Drapeau] = []
 
         for k in range(1, self.config.K + 1):
@@ -437,11 +476,15 @@ class Arbitre:
                     resultat_manche=manche.gain_agent if dernier else None,
                     historique_final=sequence if dernier else None,
                     flags=flags,
+                    # `in` est net du cache (sémantique fournisseur) : l'entrée
+                    # réellement servie = in + cache_lus + cache_ecrits — les
+                    # trois partent donc au log (audit 2026-08-22, C4).
                     tokens={
                         "in": prise.decision.tokens_entree,
                         "out": prise.decision.tokens_sortie,
                         "raisonnement": prise.decision.tokens_raisonnement,
                         "cache_lus": prise.decision.tokens_cache_lus,
+                        "cache_ecrits": prise.decision.tokens_cache_ecrits,
                     },
                     cout_usd=prise.decision.cout_usd,
                     latence_ms=prise.decision.latence_ms,
@@ -501,6 +544,7 @@ def _cumuler(
     tokens["out"] += decision.tokens_sortie or 0
     tokens["raisonnement"] += decision.tokens_raisonnement or 0
     tokens["cache_lus"] += decision.tokens_cache_lus or 0
+    tokens["cache_ecrits"] += decision.tokens_cache_ecrits or 0
     tokens["cout_usd"] = round(tokens.get("cout_usd", 0) + (decision.cout_usd or 0), 6)
 
 
@@ -527,6 +571,15 @@ def preparer_run(
     interrompue sont écartés, et la fenêtre ICL est reconstruite depuis les
     récaps logués. On ne reprend jamais en milieu de série (PRD 3 §8).
     """
+    ancien = Path(config.racine) / config.run_id
+    if ancien.exists():
+        raise ErreurArbitre(
+            f"dossier de run à l'ancien nommage trouvé : {ancien} — son chemin "
+            f"servirait le nom du bot à l'agent via le prompt système d'Hermes "
+            f"(audit 2026-08-22, C1). Le déplacer vers {config.dossier} pour "
+            f"reprendre le run, ou l'archiver hors de la racine."
+        )
+
     config.dossier.mkdir(parents=True, exist_ok=True)
     neuf = not config.dossier_store.exists() or not any(config.dossier_store.iterdir())
 
@@ -554,10 +607,14 @@ def preparer_run(
     etat.sessions_max = config.series_prevues  # une reprise peut rehausser le plafond
 
     if neuf:
+        # Le marqueur du canari transite par le modèle (c'est le principe) :
+        # on l'identifie par le code opaque, pas par le run_id — même une
+        # consigne jouée hors série et effacée avant M_0 n'a pas à nommer le
+        # bot devant l'agent (audit 2026-08-22, C1).
         rapport_canari = (
-            canari(store, config.run_id, invocateur, voisins, home_global)
+            canari(store, config.code_dossier, invocateur, voisins, home_global)
             if canari_reel
-            else canari_fichier(store, config.run_id, voisins, home_global)
+            else canari_fichier(store, config.code_dossier, voisins, home_global)
         )
         etat.canari = {
             "marqueur": rapport_canari.marqueur,
@@ -635,6 +692,7 @@ __all__ = [
     "ErreurArbitre",
     "MancheJouee",
     "PriseDeDecision",
+    "code_dossier",
     "identifiant",
     "matrice_campagne",
     "preparer_run",

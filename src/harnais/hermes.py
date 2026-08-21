@@ -1,10 +1,20 @@
-"""Invocation d'Hermes en un coup : `hermes -z` (PRD 2 §3, décision D1).
+"""Invocation d'Hermes en un coup : le chemin `-z`, par pilote fichier (D1).
 
 Une décision de jeu = une invocation, un prompt en entrée, la réponse finale
 seule sur stdout. C'est le **seul** point de contact entre l'arène et le
 modèle, et il est identique pour les trois conditions mémoire : si le harnais
 différait d'une condition à l'autre, l'expérience mesurerait « harnais ×
 mémoire » au lieu de « mémoire » (spec §0).
+
+⚠️ Transport (audit 2026-08-22, C2) : le prompt ne part **jamais en argv**.
+CreateProcess plafonne la ligne de commande Windows à 32 767 caractères, et le
+prompt ICL de campagne (3 séries de K = 150 en fenêtre) fait ~51 000 : en
+`hermes -z <prompt>`, les 9 runs ICL mourraient en série 3 (`WinError 206`).
+L'invocation passe donc par `pilote_oneshot.py`, exécuté avec le python du
+venv d'Hermes : le prompt est écrit dans un fichier temporaire (à côté de
+`usage.json`, jamais dans `cwd-neutre` qui doit rester vide) et le pilote
+appelle `_run_and_exit_oneshot` — la fonction même que l'exécutable
+`hermes -z` habille, mêmes nettoyages, mêmes codes retour, même stdout.
 
 Options posées à chaque appel :
 
@@ -52,13 +62,33 @@ RELANCES_DEFAUT = 2
 #: imposée, et la série se remplit de manches `action_par_defaut` **loguées
 #: comme des données**. Un run entier peut ainsi passer pour valide.
 #:
-#: Les motifs sont ancrés en tête de sortie : le modèle, lui, ne commence
-#: jamais sa réponse par « API call failed ».
+#: L'audit du 2026-08-22 a relevé dans `agent/conversation_loop.py` **toutes**
+#: les formes de `final_response` d'échec que la boucle d'Hermes peut rendre
+#: ainsi ; elles sont couvertes une à une ci-dessous. Ce filet textuel est
+#: désormais une défense en profondeur : le verdict qui fait foi est celui du
+#: rapport `--usage-file` (`_echec_usage`), écrit par Hermes lui-même à chaque
+#: appel, y compris en échec. Les motifs restent utiles quand le rapport
+#: manque (crash avant écriture, disque plein).
+#:
+#: Les motifs sont ancrés en tête de sortie quand le texte d'Hermes l'est :
+#: le modèle, lui, ne commence jamais sa réponse par « API call failed ».
 _MOTIFS_ECHEC_FOURNISSEUR = (
     re.compile(r"^\s*API call failed", re.IGNORECASE),
     re.compile(r"^\s*(?:Error|Erreur)\s*:\s*HTTP\s+\d{3}", re.IGNORECASE),
     re.compile(r"requires available credits", re.IGNORECASE),
     re.compile(r"^\s*Rate limit(?:ed| exceeded)", re.IGNORECASE),
+    # Relevés à l'audit du 2026-08-22 (conversation_loop.py, un motif par
+    # `final_response` d'échec rendu avec le code retour 0) :
+    re.compile(r"^\s*Billing or credits exhausted", re.IGNORECASE),
+    re.compile(r"^\s*Invalid API response after", re.IGNORECASE),
+    re.compile(r"^\s*Context length exceeded", re.IGNORECASE),
+    re.compile(r"^\s*Request payload too large", re.IGNORECASE),
+    re.compile(r"^\s*(?:First )?response truncated due to output length", re.IGNORECASE),
+    # « ⚠️ **Thinking Budget Exhausted** » : préfixé d'emoji/gras, non ancrable.
+    re.compile(r"Thinking Budget Exhausted", re.IGNORECASE),
+    re.compile(r"^\s*Model generated invalid tool call", re.IGNORECASE),
+    re.compile(r"^\s*Incomplete REASONING_SCRATCHPAD", re.IGNORECASE),
+    re.compile(r"^\s*Codex response remained incomplete", re.IGNORECASE),
 )
 
 
@@ -78,6 +108,13 @@ class Reponse:
     code_retour: int
     latence_ms: int
     tentatives: int
+    #: ⚠️ Sémantique du fournisseur, pas la nôtre : `input_tokens` est **net
+    #: du cache** (`prompt_total − cache_lus − cache_ecrits`). Nous Portal
+    #: écrivant tout le préfixe en cache à chaque appel, ce champ vaut ~3 en
+    #: pratique (constaté à l'audit du 2026-08-22 sur 540 tours réels).
+    #: L'entrée réellement servie se reconstruit :
+    #: `tokens_entree + tokens_cache_lus + tokens_cache_ecrits` — raison pour
+    #: laquelle les trois champs partent dans les logs de tour.
     tokens_entree: int | None = None
     tokens_sortie: int | None = None
     #: Part de `tokens_sortie` consommée par la chaîne de pensée interne du
@@ -110,6 +147,7 @@ class Reponse:
             "out": self.tokens_sortie,
             "raisonnement": self.tokens_raisonnement,
             "cache_lus": self.tokens_cache_lus,
+            "cache_ecrits": self.tokens_cache_ecrits,
         }
 
 
@@ -134,6 +172,37 @@ def _executable(chemin: str | None) -> str:
             "passer `executable=` explicitement"
         )
     return trouve
+
+
+#: Le pilote qui rejoue le chemin `-z` avec le prompt lu d'un fichier (C2).
+#: Il vit dans le paquet mais n'est jamais importé : il est exécuté par le
+#: python du venv d'Hermes, seul interpréteur où `hermes_cli` existe.
+PILOTE_ONESHOT = Path(__file__).with_name("pilote_oneshot.py")
+
+
+def _python_du_venv(executable_hermes: str) -> str:
+    """Le python du venv d'Hermes, voisin de l'exécutable `hermes`.
+
+    Un venv range son interpréteur à côté de ses entry points — `Scripts/`
+    sous Windows, `bin/` ailleurs — donc le python qui sait importer
+    `hermes_cli` est le voisin direct de `hermes`. Introuvable → on échoue
+    **avant** le premier appel, bruyamment : il n'y a pas de repli vers
+    `hermes -z <prompt>` en argv, qui réintroduirait silencieusement le
+    plafond de 32 767 caractères (C2).
+    """
+    chemin = Path(executable_hermes)
+    if not chemin.exists():
+        resolu = shutil.which(executable_hermes)
+        if resolu:
+            chemin = Path(resolu)
+    for nom in ("python.exe", "python"):
+        candidat = chemin.parent / nom
+        if candidat.is_file():
+            return str(candidat)
+    raise FileNotFoundError(
+        f"python du venv d'Hermes introuvable à côté de {chemin} — "
+        "le pilote fichier (C2) exige l'interpréteur du venv, pas un python quelconque"
+    )
 
 
 def _environnement(store: Store) -> Mapping[str, str]:
@@ -182,17 +251,7 @@ class InvocateurHermes:
     relances: int = RELANCES_DEFAUT
 
     def __call__(self, prompt: str, toolset: str = TOOLSET_SANS_OUTIL) -> Reponse:
-        commande_base = [
-            _executable(self.executable),
-            "-z",
-            prompt,
-            "-t",
-            toolset,
-            "-m",
-            self.parametres.modele,
-            "--provider",
-            self.parametres.fournisseur,
-        ]
+        python = _python_du_venv(_executable(self.executable))
         env = _environnement(self.store)
         travail = repertoire_neutre(self.store)
         derniere: Reponse | None = None
@@ -200,7 +259,19 @@ class InvocateurHermes:
         for tentative in range(1, self.relances + 2):
             with tempfile.TemporaryDirectory(prefix="arene-usage-") as tmp:
                 rapport = Path(tmp) / "usage.json"
-                commande = commande_base + ["--usage-file", str(rapport)]
+                # Le prompt part par fichier, jamais en argv (C2) — et jamais
+                # dans `cwd-neutre` : Hermes fouille son répertoire courant.
+                fichier_prompt = Path(tmp) / "prompt.txt"
+                fichier_prompt.write_text(prompt, encoding="utf-8")
+                commande = [
+                    python,
+                    str(PILOTE_ONESHOT),
+                    str(fichier_prompt),
+                    toolset,
+                    self.parametres.modele,
+                    self.parametres.fournisseur,
+                    str(rapport),
+                ]
                 reponse = self._executer(commande, env, rapport, tentative, travail)
             if reponse.ok:
                 return reponse
@@ -257,6 +328,12 @@ class InvocateurHermes:
         elif (message := echec_fournisseur(texte)) is not None:
             # Code retour 0, sortie non vide, et pourtant rien du modèle.
             erreur = f"échec fournisseur rendu sur stdout : {message}"
+        elif (declare := _echec_usage(rapport)) is not None:
+            # Le rapport d'usage est le verdict d'Hermes lui-même : `failed`
+            # et `completed` y sont écrits à chaque appel, échec compris
+            # (`hermes_cli/oneshot.py`). C'est lui qui attrape ce que les
+            # motifs textuels ne connaissent pas encore.
+            erreur = f"échec déclaré par le rapport d'usage : {declare}"
 
         return Reponse(
             texte=texte,
@@ -266,6 +343,37 @@ class InvocateurHermes:
             erreur=erreur,
             **_usage(rapport),
         )
+
+
+def _echec_usage(rapport: Path) -> str | None:
+    """Échec déclaré par le rapport `--usage-file` lui-même (audit 2026-08-22).
+
+    Le défaut n°2 du pilote — « la panne prise pour une réponse » — avait été
+    colmaté par des motifs textuels sur stdout, forcément incomplets :
+    `conversation_loop.py` rend une douzaine de `final_response` d'échec
+    différents avec le code retour 0 (« Billing or credits exhausted »,
+    « Context length exceeded », refus de politique de contenu…), et la liste
+    peut changer à chaque version d'Hermes. Or le signal fiable existait déjà
+    sur le disque : le rapport d'usage porte `failed`, `completed` et
+    `failure`, écrits précisément pour les pipelines. C'est lui qu'on lit.
+
+    - `failed` vaut toujours un booléen dans le rapport → vrai = échec ;
+    - `completed` à `False` couvre les fins **partielles** non marquées
+      `failed` (sortie tronquée, budget de raisonnement épuisé, compression
+      différée) — sur le chemin nominal, Hermes le pose à `True`
+      (`agent/turn_finalizer.py`) ;
+    - rapport absent ou illisible → `None` : pas de verdict, les motifs
+      textuels restent seuls juges.
+    """
+    try:
+        donnees = json.loads(rapport.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if donnees.get("failed"):
+        return f"failed=true : {str(donnees.get('failure') or 'sans détail')[:300]}"
+    if donnees.get("completed") is False:
+        return "completed=false (réponse partielle, jamais un tour nominal)"
+    return None
 
 
 def _usage(rapport: Path) -> Mapping[str, object]:

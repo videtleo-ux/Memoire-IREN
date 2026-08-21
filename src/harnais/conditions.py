@@ -100,6 +100,14 @@ class Decision:
     tokens_raisonnement: int | None = None
     #: Entrée servie depuis le cache de préfixe (facturée ~10x moins).
     tokens_cache_lus: int | None = None
+    #: Entrée **écrite** au cache de préfixe. Indispensable, pas décoratif :
+    #: le `input_tokens` du fournisseur est net du cache, et Nous écrit tout
+    #: le préfixe à chaque appel — `tokens_entree` retombe alors à ~3 (audit
+    #: du 2026-08-22, constant sur 540 tours réels). Sans ce champ, l'entrée
+    #: réellement servie (`in + cache_lus + cache_ecrits`) est irrecouvrable
+    #: depuis les logs, et la constante `CARACTERES_PAR_TOKEN` de la fenêtre
+    #: ICL devient invérifiable sur pièces.
+    tokens_cache_ecrits: int | None = None
     #: Coût estimé par le fournisseur pour cette décision. On pourrait le
     #: recalculer depuis les tokens, mais c'est le fournisseur qui facture :
     #: son chiffre fait foi pour le suivi de budget.
@@ -202,6 +210,7 @@ class Harnais:
         tokens_in, tokens_out = reponse.tokens_entree, reponse.tokens_sortie
         tokens_rais = reponse.tokens_raisonnement
         tokens_cache = reponse.tokens_cache_lus
+        tokens_cache_w = reponse.tokens_cache_ecrits
         cout = reponse.cout_usd
         flags: list[str] = list(self._detecter_ecriture())
         flags.extend(_pseudo_outil(reponse.texte))
@@ -215,6 +224,7 @@ class Harnais:
             tokens_out = _additionner(tokens_out, relance.tokens_sortie)
             tokens_rais = _additionner(tokens_rais, relance.tokens_raisonnement)
             tokens_cache = _additionner(tokens_cache, relance.tokens_cache_lus)
+            tokens_cache_w = _additionner(tokens_cache_w, relance.tokens_cache_ecrits)
             cout = (cout or 0) + (relance.cout_usd or 0) if cout is not None else relance.cout_usd
             flags.extend(self._detecter_ecriture())
             flags.extend(_pseudo_outil(relance.texte))
@@ -237,6 +247,7 @@ class Harnais:
             tokens_sortie=tokens_out,
             tokens_raisonnement=tokens_rais,
             tokens_cache_lus=tokens_cache,
+            tokens_cache_ecrits=tokens_cache_w,
             cout_usd=cout,
             modele=reponse.modele,
             invocations=invocations,

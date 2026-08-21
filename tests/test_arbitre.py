@@ -113,6 +113,7 @@ class InvocateurFactice:
             tentatives=1,
             tokens_entree=800,
             tokens_sortie=40,
+            tokens_cache_ecrits=750,
             modele="modele-de-test",
             erreur=erreur,
         )
@@ -691,6 +692,92 @@ def test_temoin_disolation_detecte_un_store_remplace(tmp_path):
     (store.chemin / FICHIER_TEMOIN).unlink()
     with pytest.raises(EchecCanari, match="témoin"):
         verifier_temoin(store, marqueur)
+
+
+# ==========================================================================
+# C1 (audit 2026-08-22) — le chemin du store ne doit rien nommer
+# ==========================================================================
+
+
+def test_c1_dossier_de_run_opaque(tmp_path):
+    """Hermes insère le chemin de `HERMES_HOME` dans son prompt système
+    (« Current working directory », « Active Hermes profile ») : un dossier
+    nommé `SM-station-r1` sert le nom du bot — et donc l'exploitation — à
+    l'agent, à chaque manche, sans trace dans les logs. Le nom du dossier est
+    donc dérivé, opaque, et le run_id n'y figure jamais."""
+    for bot in ("Station", "Over-folder", "GTO"):
+        for condition in Condition:
+            config = _config(tmp_path, condition, bot)
+            nom = config.dossier.name
+            assert nom.startswith("run-")
+            corps = nom[len("run-"):]
+            # Le corps est un digest hexadécimal : aucun des termes porteurs
+            # de sens (bot, condition, réplication) n'y est même exprimable.
+            # (« ae » l'est — c'est le run_id complet qu'on interdit, pas
+            # deux lettres de hasard.)
+            assert set(corps) <= set("0123456789abcdef"), corps
+            for indice in ("station", "over", "folder", "gto", "sm", "icl", "-r"):
+                assert indice not in corps, (
+                    f"le chemin du store fuiterait « {indice} » dans le prompt système"
+                )
+            assert config.run_id.lower() not in str(config.dossier).lower()
+
+
+def test_c1_dossier_derive_donc_reprise_possible(tmp_path):
+    """Le nom est une fonction pure de (graine, run_id) : deux préparations du
+    même run retombent sur le même dossier — la reprise ne dépend d'aucun
+    état annexe — et deux runs distincts ne se marchent pas dessus."""
+    config = _config(tmp_path, Condition.SM, "Station")
+    assert config.dossier == _config(tmp_path, Condition.SM, "Station").dossier
+    assert config.dossier != _config(tmp_path, Condition.ICL, "Station").dossier
+    assert config.dossier != _config(tmp_path, Condition.SM, "Over-folder").dossier
+
+    # la correspondance humaine reste dans les logs et l'état, pas dans le chemin
+    arbitre = _arbitre(config)
+    arbitre.jouer_serie(0)
+    assert all(t["run_id"] == config.run_id for t in _tours(config))
+    assert EtatRun.charger(config.dossier).run_id == config.run_id
+
+
+def test_c1_ancien_nommage_refuse(tmp_path):
+    """Un dossier à l'ancien nommage (`racine/run_id`) ne doit être ni repris
+    tel quel — il fuiterait — ni silencieusement dédoublé : le run refuse de
+    démarrer et dit quoi faire."""
+    config = _config(tmp_path, Condition.SM, "Station")
+    (tmp_path / config.run_id).mkdir()
+    with pytest.raises(ErreurArbitre, match="ancien nommage"):
+        _arbitre(config)
+
+
+def test_c1_marqueur_canari_sans_run_id(tmp_path):
+    """Le marqueur du canari transite par le modèle : lui non plus n'a pas à
+    nommer le bot, même hors série et effacé avant M_0."""
+    config = _config(tmp_path, Condition.AE, "Station")
+    arbitre = _arbitre(config)
+    marqueur = arbitre.etat.canari["marqueur"]
+    assert config.run_id not in marqueur
+    assert "station" not in marqueur.lower()
+    assert config.code_dossier in marqueur, "l'identifiant opaque garde la traçabilité"
+
+
+# ==========================================================================
+# C4 (audit 2026-08-22) — l'entrée réellement servie doit être recouvrable
+# ==========================================================================
+
+
+def test_c4_cache_ecrits_logue_au_tour_et_a_la_serie(tmp_path):
+    """Le `input_tokens` du fournisseur est net du cache ; Nous écrivant tout
+    le préfixe en cache à chaque appel, `tokens.in` retombe à ~3 (mesuré sur
+    540 tours réels). Sans `cache_ecrits` au log, l'entrée réellement servie
+    (in + cache_lus + cache_ecrits) est irrecouvrable et la constante
+    `CARACTERES_PAR_TOKEN` de la fenêtre ICL est invérifiable sur pièces."""
+    arbitre = _jouer(tmp_path, Condition.SM, "Station", K=4, series=1)
+
+    tours = _tours(arbitre.config)
+    assert tours and all(t["tokens"]["cache_ecrits"] == 750 for t in tours)
+
+    (serie,) = _series(arbitre.config)
+    assert serie["cout_session_tokens"]["cache_ecrits"] == 750 * len(tours)
 
 
 # ==========================================================================

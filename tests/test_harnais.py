@@ -69,6 +69,7 @@ class InvocateurFactice:
             tentatives=3 if self.echec else 1,
             tokens_entree=800,
             tokens_sortie=40,
+            tokens_cache_ecrits=750,
             modele="modele-de-test",
             erreur="sortie vide" if self.echec else None,
         )
@@ -76,6 +77,20 @@ class InvocateurFactice:
     @property
     def prompts(self) -> list[str]:
         return [prompt for prompt, _ in self.appels]
+
+
+def _faux_venv_hermes(tmp_path: Path) -> str:
+    """Un faux venv d'Hermes : l'exécutable et son python voisin.
+
+    Les tests ne doivent dépendre ni du PATH de la machine ni d'une install
+    réelle — seuls comptent l'arborescence (python à côté de `hermes`) et le
+    contenu de la commande, que `subprocess.run` est de toute façon simulé.
+    """
+    scripts = tmp_path / "venv-scripts"
+    scripts.mkdir()
+    (scripts / "hermes").write_text("", encoding="utf-8")
+    (scripts / "python.exe").write_text("", encoding="utf-8")
+    return str(scripts / "hermes")
 
 
 def test_h_hermes_tourne_dans_un_repertoire_neutre(tmp_path, monkeypatch):
@@ -106,9 +121,80 @@ def test_h_hermes_tourne_dans_un_repertoire_neutre(tmp_path, monkeypatch):
         raise OSError("stop")  # on ne veut que le cwd, pas l'appel
 
     monkeypatch.setattr(subprocess, "run", faux_run)
-    InvocateurHermes(store, executable="hermes")("prompt", TOOLSET_SANS_OUTIL)
+    InvocateurHermes(store, executable=_faux_venv_hermes(tmp_path))("prompt", TOOLSET_SANS_OUTIL)
 
     assert vus["cwd"] == str(neutre), "le sous-processus ne doit jamais voir le dépôt"
+
+
+def test_h_prompt_par_fichier_jamais_en_argv(tmp_path, monkeypatch):
+    """Le prompt part par fichier, via le pilote — jamais en argument (C2).
+
+    CreateProcess plafonne la ligne de commande Windows à 32 767 caractères ;
+    le prompt ICL de campagne (3 séries de K = 150) fait ~51 000. En argv,
+    les 9 runs ICL mourraient en série 3 (`WinError 206`) — jamais vu au
+    pilote, qui jouait ICL à K = 20. La ligne de commande doit donc rester
+    courte **quelle que soit** la taille du prompt, et le prompt doit arriver
+    intact au pilote, hors de `cwd-neutre` (qui doit rester vide : Hermes
+    fouille son répertoire courant)."""
+    import subprocess
+
+    from harnais.hermes import PILOTE_ONESHOT, InvocateurHermes
+
+    store = creer_store(tmp_path / "store")
+    prompt = "règles + fenêtre ICL de campagne\n" * 1600  # ~52 000 caractères
+    assert len(prompt) > 32767
+
+    vus: dict[str, object] = {}
+
+    def faux_run(commande, **kw):
+        vus["commande"] = list(commande)
+        vus["cwd"] = kw.get("cwd")
+        vus["prompt_recu"] = Path(commande[2]).read_text(encoding="utf-8")
+        raise OSError("stop")  # l'inspection suffit, pas d'appel réel
+
+    monkeypatch.setattr(subprocess, "run", faux_run)
+    InvocateurHermes(store, executable=_faux_venv_hermes(tmp_path))(prompt, TOOLSET_SANS_OUTIL)
+
+    commande = vus["commande"]
+    assert commande[1] == str(PILOTE_ONESHOT)
+    assert len(subprocess.list2cmdline(commande)) < 32767, (
+        "la ligne de commande doit rester sous le plafond CreateProcess "
+        "quelle que soit la taille du prompt"
+    )
+    assert vus["prompt_recu"] == prompt, "le prompt doit arriver intact par le fichier"
+    fichier = Path(commande[2])
+    assert store.chemin not in fichier.parents, (
+        "le fichier de prompt ne doit jamais vivre sous le store : "
+        "`cwd-neutre` doit rester vide et le store ne contient que Hermes"
+    )
+
+
+def test_h_pilote_oneshot_fige():
+    """Le pilote n'est jamais importé par la suite (il exige `hermes_cli`,
+    absent de cet interpréteur) : on fige son contrat statiquement — les cinq
+    arguments positionnels et le point d'entrée d'Hermes qu'il rejoue."""
+    from harnais.hermes import PILOTE_ONESHOT
+
+    source = PILOTE_ONESHOT.read_text(encoding="utf-8")
+    assert "sys.argv[1:6]" in source, "cinq arguments positionnels, ni plus ni moins"
+    assert "_run_and_exit_oneshot" in source, (
+        "le pilote doit rejouer le point d'entrée exact de `hermes -z` "
+        "(hermes_cli/main.py) — pas une réimplémentation"
+    )
+    assert "import hermes_cli" not in source.replace(
+        "from hermes_cli.main import", ""
+    ), "un seul import d'Hermes, celui du point d'entrée"
+
+
+def test_h_python_du_venv_introuvable_echoue_avant_lappel(tmp_path):
+    """Pas de repli silencieux vers `hermes -z <prompt>` en argv : sans le
+    python du venv, on échoue avant le premier appel, bruyamment."""
+    from harnais.hermes import _python_du_venv
+
+    seul = tmp_path / "hermes"
+    seul.write_text("", encoding="utf-8")
+    with pytest.raises(FileNotFoundError, match="venv"):
+        _python_du_venv(str(seul))
 
 
 SORTIES_DECHEC = [
@@ -118,6 +204,20 @@ SORTIES_DECHEC = [
     "requires available credits. Your account balance is too low.",
     "Error: HTTP 429: too many requests",
     "Rate limit exceeded, retry later",
+    # Relevés à l'audit du 2026-08-22 dans `agent/conversation_loop.py` : les
+    # autres `final_response` d'échec que la boucle d'Hermes rend avec le code
+    # retour 0 — aucun n'était couvert par les motifs d'origine.
+    "Billing or credits exhausted: insufficient_quota on openai/gpt-5.6-luna",
+    "Invalid API response after 3 retries: rate limited by upstream provider (429)",
+    "Context length exceeded: max compression attempts (3) reached.",
+    "Request payload too large (413). Cannot compress further.",
+    "Response truncated due to output length limit",
+    "First response truncated due to output length limit",
+    "⚠️ **Thinking Budget Exhausted**\n\nThe model used all its output tokens on "
+    "reasoning and had none left for the actual response.",
+    "Model generated invalid tool call: <terminal>…",
+    "Incomplete REASONING_SCRATCHPAD after 2 retries",
+    "Codex response remained incomplete after 3 continuation attempts",
 ]
 
 
@@ -141,6 +241,38 @@ def test_h_vraie_reponse_de_modele_non_prise_pour_un_echec():
         "Le résultat de l'épreuve précédente a échoué à m'éclairer.\nACTION: couvrir",
     ]:
         assert echec_fournisseur(texte) is None, texte
+
+
+def test_h_echec_declare_par_le_rapport_dusage(tmp_path):
+    """Le rapport `--usage-file` porte `failed` et `completed` à chaque appel :
+    c'est le verdict d'Hermes lui-même, et il attrape les textes d'échec que
+    les motifs ne connaissent pas encore (audit 2026-08-22, C3). Les motifs
+    textuels redeviennent une défense en profondeur."""
+    import json
+
+    from harnais.hermes import _echec_usage
+
+    rapport = tmp_path / "usage.json"
+
+    rapport.write_text(
+        json.dumps({"failed": True, "failure": "HTTP 500 upstream", "completed": False}),
+        encoding="utf-8",
+    )
+    assert "HTTP 500 upstream" in _echec_usage(rapport)
+
+    rapport.write_text(json.dumps({"failed": False, "completed": False}), encoding="utf-8")
+    assert _echec_usage(rapport) is not None, "partiel (completed=false) = pas une donnée"
+
+    rapport.write_text(json.dumps({"failed": False, "completed": True}), encoding="utf-8")
+    assert _echec_usage(rapport) is None, "un tour nominal ne doit pas être rejeté"
+
+    rapport.write_text(json.dumps({"input_tokens": 3}), encoding="utf-8")
+    assert _echec_usage(rapport) is None, "sans verdict explicite, pas de rejet"
+
+    assert _echec_usage(tmp_path / "absent.json") is None, (
+        "rapport manquant : les motifs textuels restent seuls juges, "
+        "une manche valide ne doit pas échouer sur un rapport perdu"
+    )
 
 
 def _store(tmp_path: Path, nom: str = "store") -> Store:
@@ -340,6 +472,11 @@ def test_h3_relance_puis_defaut_passif():
     assert gabarits.REGLES in invocateur.prompts[1], "la relance rejoue le prompt entier"
     assert "[FORMAT]" in invocateur.prompts[1]
     assert decision.tokens_entree == 1600, "les tokens des deux appels s'additionnent"
+    assert decision.tokens_cache_ecrits == 1500, (
+        "l'écriture cache s'additionne aussi : sans elle, l'entrée réellement "
+        "servie (in + cache_lus + cache_ecrits) est irrecouvrable — le "
+        "`input_tokens` du fournisseur est net du cache (audit 2026-08-22, C4)"
+    )
 
 
 def test_h3_relance_reussie():

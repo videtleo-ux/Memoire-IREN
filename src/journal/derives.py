@@ -47,6 +47,11 @@ COLONNES_SESSIONS = (
     "plateau_declare",
     "cout_tokens_in",
     "cout_tokens_out",
+    # `in` est net du cache chez le fournisseur : l'entrée réellement servie
+    # se lit `in + cache_lus + cache_ecrits` (audit 2026-08-22, C4). Les runs
+    # antérieurs au champ laissent la cellule vide.
+    "cout_tokens_cache_lus",
+    "cout_tokens_cache_ecrits",
 )
 
 COLONNES_INFOSETS = ("run_id", "condition", "bot", "replication", "session", "infoset", "p", "n")
@@ -105,6 +110,8 @@ def ligne_session(session: Mapping[str, Any]) -> dict[str, Any]:
         "plateau_declare": session.get("plateau", {}).get("declare"),
         "cout_tokens_in": cout.get("in"),
         "cout_tokens_out": cout.get("out"),
+        "cout_tokens_cache_lus": cout.get("cache_lus"),
+        "cout_tokens_cache_ecrits": cout.get("cache_ecrits"),
     }
 
 
