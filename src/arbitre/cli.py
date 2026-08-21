@@ -49,13 +49,22 @@ def _analyseur() -> argparse.ArgumentParser:
     analyseur.add_argument("--racine", default=None, help="racine des runs (hors OneDrive)")
     analyseur.add_argument("--machine", default="victus")
     analyseur.add_argument("--modele", default=None, help="modèle du catalogue Nous Portal")
+    niveaux = ["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"]
     analyseur.add_argument(
         "--reasoning",
         default=None,
-        choices=["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"],
-        help="effort de raisonnement (défaut : medium). C'est le principal "
-        "levier sur les tokens de sortie, donc sur le coût de la campagne — "
-        "à mesurer au pilote, puis à figer.",
+        choices=niveaux,
+        help="effort de raisonnement des manches (défaut : medium). Principal "
+        "levier sur les tokens de sortie, donc sur le coût ET la durée de la "
+        "campagne — à mesurer au pilote, puis à figer.",
+    )
+    analyseur.add_argument(
+        "--reasoning-reflexion",
+        default=None,
+        choices=niveaux,
+        help="effort de raisonnement de la réflexion de frontière (condition "
+        "AE). Elle coûte 1/K du budget : rien n'oblige à l'économiser avec "
+        "les manches.",
     )
     analyseur.add_argument(
         "--home-source", default=None, help="HERMES_HOME global, d'où l'auth est recopiée"
@@ -110,6 +119,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parametres = ParametresModele(
         modele=arguments.modele or defaut.modele,
         reasoning_effort=arguments.reasoning or defaut.reasoning_effort,
+        # À défaut de consigne, la réflexion garde le niveau des manches :
+        # le découplage doit être un choix explicite, pas un effet de bord.
+        reasoning_reflexion=(
+            arguments.reasoning_reflexion or arguments.reasoning or defaut.reasoning_reflexion
+        ),
     )
     config = ConfigRun(
         condition=Condition(arguments.condition),
@@ -123,7 +137,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     print(f"run {config.run_id} — K={config.K}, séries au plus {config.series_prevues}")
-    print(f"  modèle  : {parametres.modele} (raisonnement {parametres.reasoning_effort})")
+    print(
+        f"  modèle  : {parametres.modele} · raisonnement manche "
+        f"{parametres.reasoning_effort}, réflexion {parametres.reasoning_reflexion}"
+    )
     print(f"  dossier : {config.dossier}")
 
     arbitre = preparer_run(

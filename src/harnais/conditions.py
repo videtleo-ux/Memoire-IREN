@@ -374,7 +374,11 @@ class HarnaisAutoEcrit(Harnais):
         assert self.store is not None
         avant = gel.lire_notes(self.store.chemin)
 
-        self.store.ecrire_config(memoire_native=True, max_turns=self.max_turns_reflexion)
+        self.store.ecrire_config(
+            memoire_native=True,
+            max_turns=self.max_turns_reflexion,
+            reasoning=self.store.parametres.reasoning_reflexion,
+        )
         try:
             reponse = self._invoquer(gabarits.prompt_reflexion(recap), TOOLSET_MEMOIRE)
         finally:

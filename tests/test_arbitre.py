@@ -699,6 +699,43 @@ def test_affichage_survit_a_une_console_cp1252(tmp_path, monkeypatch):
     cli._tracer(serie)  # ne doit pas lever
 
 
+def test_raisonnement_decouple_entre_manche_et_frontiere(tmp_path):
+    """94 % des tokens de sortie sont du raisonnement interne jamais logué : on
+    l'économise sur les K manches, pas sur l'unique réflexion qui synthétise la
+    série — c'est elle que l'expérience mesure, et elle coûte 1/K du budget."""
+    from harnais import ParametresModele
+
+    config = _config(
+        tmp_path,
+        Condition.AE,
+        "Station",
+        K=4,
+        series=1,
+        parametres=ParametresModele(reasoning_effort="low", reasoning_reflexion="high"),
+    )
+    invocateur = InvocateurFactice(notes="il couvre toujours")
+    arbitre = _arbitre(config, invocateur)
+
+    # On lit la config telle que l'agent la verra, au moment exact de l'appel.
+    vus: list[tuple[str, str]] = []
+    appeler = invocateur.__call__
+
+    def observer(prompt, toolset=TOOLSET_SANS_OUTIL):
+        vus.append((toolset, arbitre.store.config.read_text(encoding="utf-8")))
+        return appeler(prompt, toolset)
+
+    arbitre.agent.invocateur = observer
+    arbitre.jouer()
+
+    manches = [c for t, c in vus if t == TOOLSET_SANS_OUTIL]
+    reflexions = [c for t, c in vus if t == TOOLSET_MEMOIRE]
+    assert manches and reflexions
+    assert all('reasoning_effort: "low"' in c for c in manches)
+    assert all('reasoning_effort: "high"' in c for c in reflexions)
+    # Et la config est bien rendue à son niveau de manche après la frontière.
+    assert 'reasoning_effort: "low"' in arbitre.store.config.read_text(encoding="utf-8")
+
+
 def test_entete_de_run_encodable_en_cp1252(tmp_path):
     """Nos propres chaînes, elles, doivent passer sans filet : le filet est là
     pour les textes qu'on ne maîtrise pas, pas pour excuser les nôtres."""

@@ -56,18 +56,41 @@ LIMITE_NOTES = 2200
 
 @dataclass(frozen=True)
 class ParametresModele:
-    """Paramètres d'inférence figés, identiques aux 27 runs et logués."""
+    """Paramètres d'inférence figés, identiques aux 27 runs et logués.
+
+    L'effort de raisonnement est **découplé entre la manche et la frontière**,
+    et ce n'est pas un réglage de confort. Le mini-run du 2026-08-21 a montré
+    que 94 % des tokens de sortie sont du raisonnement interne jamais logué,
+    et que la latence suit le volume généré : c'est le seul levier sérieux sur
+    le coût **et** sur la durée de la campagne. Or les deux moments n'ont pas
+    les mêmes besoins :
+
+    - une **manche** demande une décision binaire sur un arbre de profondeur
+      3, répétée K fois — l'essentiel du raisonnement interne y est du gras ;
+    - une **frontière** demande de synthétiser 200 manches en huit à quinze
+      notes, une fois par série. C'est le geste que l'expérience mesure, et
+      il coûte 1/200ᵉ du budget : il n'y a aucune raison de l'économiser.
+
+    Le découpage ne casse pas la comparabilité inter-conditions : SM et ICL
+    n'ont pas d'étape de réflexion, et les trois conditions jouent leurs
+    manches au même niveau. Les deux valeurs sont figées avant la campagne et
+    loguées à chaque appel.
+    """
 
     modele: str = MODELE_DEFAUT
     fournisseur: str = FOURNISSEUR_DEFAUT
     base_url: str = BASE_URL_DEFAUT
+    #: Niveau servi aux K manches d'une série.
     reasoning_effort: str = "medium"
+    #: Niveau servi à l'unique réflexion de frontière (condition AE).
+    reasoning_reflexion: str = "medium"
 
     def pour_logs(self) -> Mapping[str, str]:
         return {
             "modele": self.modele,
             "fournisseur": self.fournisseur,
             "reasoning_effort": self.reasoning_effort,
+            "reasoning_reflexion": self.reasoning_reflexion,
         }
 
 
@@ -113,14 +136,17 @@ def config_arene(
     parametres: ParametresModele = ParametresModele(),
     memoire_native: bool = False,
     max_turns: int = 2,
+    reasoning: str | None = None,
 ) -> Mapping[str, Any]:
     """Config du store d'un run.
 
-    `memoire_native` est la seule chose qui bascule au cours d'un run : elle
-    est **fausse pendant les manches** pour les trois conditions (le slot est
-    posé par l'arbitre dans le prompt, PRD 2 §5.3 — c'est ce qui rend les
-    prompts octet-pour-octet comparables), et vraie le temps de la seule
-    invocation de réflexion en condition AE.
+    Deux choses basculent au cours d'un run, et seulement à la frontière de
+    série en condition AE : `memoire_native` (fausse pendant les manches pour
+    les trois conditions — le slot est posé par l'arbitre dans le prompt,
+    PRD 2 §5.3, c'est ce qui rend les prompts octet-pour-octet comparables) et
+    `reasoning`, qui laisse la réflexion travailler à un autre niveau que les
+    manches (cf. `ParametresModele`). Hors frontière, les deux reviennent à
+    leur valeur de manche.
     """
     return {
         "model": {
@@ -131,7 +157,7 @@ def config_arene(
         "agent": {
             "max_turns": max_turns,
             "verbose": False,
-            "reasoning_effort": parametres.reasoning_effort,
+            "reasoning_effort": reasoning or parametres.reasoning_effort,
         },
         "memory": {
             "memory_enabled": memoire_native,
@@ -181,8 +207,13 @@ class Store:
     def config(self) -> Path:
         return self.chemin / "config.yaml"
 
-    def ecrire_config(self, memoire_native: bool = False, max_turns: int = 2) -> None:
-        contenu = _yaml(config_arene(self.parametres, memoire_native, max_turns))
+    def ecrire_config(
+        self,
+        memoire_native: bool = False,
+        max_turns: int = 2,
+        reasoning: str | None = None,
+    ) -> None:
+        contenu = _yaml(config_arene(self.parametres, memoire_native, max_turns, reasoning))
         self.config.write_text(contenu + "\n", encoding="utf-8")
 
     def variables_env(self) -> Mapping[str, str]:
