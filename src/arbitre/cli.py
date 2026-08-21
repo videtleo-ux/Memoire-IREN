@@ -50,6 +50,14 @@ def _analyseur() -> argparse.ArgumentParser:
     analyseur.add_argument("--machine", default="victus")
     analyseur.add_argument("--modele", default=None, help="modèle du catalogue Nous Portal")
     analyseur.add_argument(
+        "--reasoning",
+        default=None,
+        choices=["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"],
+        help="effort de raisonnement (défaut : medium). C'est le principal "
+        "levier sur les tokens de sortie, donc sur le coût de la campagne — "
+        "à mesurer au pilote, puis à figer.",
+    )
+    analyseur.add_argument(
         "--home-source", default=None, help="HERMES_HOME global, d'où l'auth est recopiée"
     )
     analyseur.add_argument(
@@ -98,8 +106,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     _console_tolerante()
     arguments = _analyseur().parse_args(argv)
 
-    parametres = (
-        ParametresModele(modele=arguments.modele) if arguments.modele else ParametresModele()
+    defaut = ParametresModele()
+    parametres = ParametresModele(
+        modele=arguments.modele or defaut.modele,
+        reasoning_effort=arguments.reasoning or defaut.reasoning_effort,
     )
     config = ConfigRun(
         condition=Condition(arguments.condition),
@@ -113,6 +123,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     print(f"run {config.run_id} — K={config.K}, séries au plus {config.series_prevues}")
+    print(f"  modèle  : {parametres.modele} (raisonnement {parametres.reasoning_effort})")
     print(f"  dossier : {config.dossier}")
 
     arbitre = preparer_run(

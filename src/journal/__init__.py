@@ -35,6 +35,7 @@ from .ecrivains import (
     lire_sessions,
     lire_tours,
 )
+from .recompter import recompter, recompter_run
 from .rejouer import Rapport, estimer_pi_hat, rejouer_run
 from .schemas import (
     VERSION_ARENE,
@@ -71,6 +72,8 @@ __all__ = [
     "lire_jsonl",
     "lire_sessions",
     "lire_tours",
+    "recompter",
+    "recompter_run",
     "rejouer_run",
     "valider_session",
     "valider_tour",

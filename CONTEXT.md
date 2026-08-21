@@ -60,6 +60,26 @@ Quatre décisions prises à l'implémentation, qui ne sont pas dans le PRD et qu
 
 S'y ajoute un **témoin d'isolation** (`<store>/temoin-isolation.txt`) posé au démarrage et vérifié à la clôture : le canari du PRD 2 §6 prouve l'isolation *au démarrage* mais efface son marqueur pour laisser `M_0` vide ; le témoin, lui, répond à « ce store est-il resté le sien du début à la fin ? ». Il vit hors du dossier `memories/`, donc le gel intra-série ne peut ni l'effacer ni le ressusciter.
 
+## 4 quater. Mini-run de bout en bout (2026-08-21) — ce qu'il a tranché
+
+Premier appel API réel du projet : 1 série, K = 20, Station, SM, `tencent/hy3:free`, 22 appels, coût nul. Intégrité verte, rejeu complet, 100 % de parsing, positions 10/10, canari et gel prouvés sur le binaire réel. Quatre constats qui changent le plan.
+
+1. **⚠️ Piège n°6 — la console Windows est en cp1252.** Le run est tombé sur un `≤` non encodable **avant le premier appel API**. `arbitre.cli._console_tolerante()` dégrade désormais l'affichage au lieu du run ; les journaux restent en UTF-8, écrits par le journal.
+2. **L'obfuscation ne tient pas.** Le modèle a nommé « Kuhn » et récité le profil GTO à la **3ᵉ manche, sans mémoire**. 14 manches sur 20 portent une mention du jeu source. Décision du pilote : **on n'en fait plus un pilier**, elle passe en limite du mémoire (bloc L.1 de `memoire/methodologie.md`), le lexique est conservé (le changer romprait la comparabilité), et la reconnaissance du jeu devient une **covariable mesurée**. L'identification repose sur l'asymétrie Station/Over-folder, et SM devient la mesure empirique du niveau récité.
+3. **Le détecteur avait un trou et ne l'aura plus jamais.** Il laissait passer `check`, `bet`, `fold`, `main`, `ante` — les traductions spontanées du modèle vers le jeu source. Motifs ajoutés (45 → 70 hits sur le même run). Surtout : `journal.recompter` **rejoue le détecteur depuis les journaux**, qui conservent le texte intégral. Le détecteur n'est donc plus une décision à figer avant campagne ; il s'améliore après coup sans invalider une seule manche, et l'écart avec le compte figé se rapporte.
+4. **L'enveloppe de coût du PRD 3 §9 est fausse d'un ordre de grandeur.** Mesuré : **1 296 tokens d'entrée / 3 580 de sortie par manche** (estimé : 800 / 150). L'entrée est 5× l'estimation (le prompt système d'Hermès s'ajoute au nôtre), la sortie 24× (chaînes de raisonnement). La latence de 62 s/manche n'est pas exploitable pour projeter la durée : c'est celle du palier gratuit.
+
+### Catalogue Nous Portal et coûts (cache local du 2026-08-03)
+
+| Modèle | Prix / 1M tokens | Campagne 12 séries |
+|---|---|---|
+| `tencent/hy3:free`, `poolside/laguna-s-2.1:free`, `inclusionai/ling-3.0-flash:free`, `stepfun/step-3.7-flash:free`, `poolside/laguna-xs-2.1:free` | **gratuit** | **0 $** |
+| `openai/gpt-5.6-luna` | in 0,08 $ / out 0,48 $ | ~113 $ |
+| `openai/gpt-5.6-terra` | in 0,80 $ / out 4,80 $ | ~1 130 $ |
+| `openai/gpt-5.6-sol` | in 4,00 $ / out 24,00 $ | ~5 640 $ |
+
+**Cinq modèles gratuits au catalogue, pas un seul.** La campagne complète est donc réalisable à coût nul ; la contrainte réelle devient le **temps**, pas l'argent. Le levier principal sur le coût comme sur la durée est l'effort de raisonnement (`--reasoning`, exposé au CLI depuis le 2026-08-21, `medium` par défaut) : il commande les tokens de sortie, qui représentent 60 % du volume et 90 % du prix chez les modèles payants.
+
 ## 5. Où en est-on / où va-t-on
 
 L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).

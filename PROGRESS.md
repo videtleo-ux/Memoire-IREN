@@ -25,9 +25,9 @@ Dernière mise à jour : 2026-08-21. Convention : ✅ fait · 🔄 en cours · �
 - ✅ Harnais mémoire (PRD 2) — `src/harnais/`, `tests/test_harnais.py`, **56 tests**. Gabarits obfusqués + hash des règles, parsing strict/repli/relance/défaut, gel fichiers, stores isolés, canari d'isolation, 3 conditions SM/ICL/AE. **Canari exécuté pour de vrai** le 2026-08-21 (store jetable, modèle gratuit) : écriture confirmée dans le store du run, absente du home global, écriture impossible en configuration de manche.
 - ✅ Logging (PRD 4) — `src/journal/`, `tests/test_journal.py`, **44 tests**. Schémas JSONL validés à l'écriture, détecteur dé-obfuscation/récitation à deux niveaux, CSV dérivés, `rejouer.py` (re-règle chaque manche depuis les seuls logs et retrouve π̂ et l'écart).
 - ✅ Arbitre & orchestration (PRD 3) — `src/arbitre/`, `tests/test_arbitre.py`, **43 tests**. Donnes *dérivées* de la graine de campagne (fonction pure de `(graine, r, s, k)`, donc appariées entre conditions par construction), flux du bot seedé par manche, boucle session/manche avec gel avant chaque manche, manche atomique (rejeu à donne identique sur `ErreurHarnais`), récap canonique, π̂ + mesures exactes, critère de plateau automatisé, état de run et reprise sur incident, vérifications d'intégrité de clôture, CLI `python -m arbitre`.
-- ⬜ Test de bout en bout : 1 mini-run (1 session, K réduit ~20, bot Station, condition SM) sur le Victus — **prochaine étape, premier appel API réel du projet** (modèle gratuit, coût nul)
+- ✅ Test de bout en bout : mini-run `SM-station-r1` (1 série, K = 20, Station, SM, `tencent/hy3:free`) exécuté le 2026-08-21. Intégrité verte, rejeu complet, **100 % de parsing**, positions 10/10, canari et gel prouvés sur le binaire réel, écart = 1/18 exact. Quatre constats consignés en `CONTEXT.md` §4 quater.
 
-Total : **184 tests verts en ~8 s**, toujours sans dépendance ni appel API dans la suite.
+Total : **194 tests verts en ~8 s**, toujours sans dépendance ni appel API dans la suite.
 
 ## Phase 3 — Pilote de calibrage (⬜)
 

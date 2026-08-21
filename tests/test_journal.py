@@ -34,6 +34,7 @@ from journal import (
     rejouer_run,
 )
 from journal.deobfuscation import NIVEAU_DEOBFUSCATION, NIVEAU_RECITATION
+from moteur.lexique import rendre_action
 from journal.derives import COLONNES_SESSIONS
 from moteur import (
     CARTES,
@@ -139,7 +140,10 @@ def fabriquer_run(dossier: Path, K: int = 6, condition: str = "SM") -> JournalRu
                     vue_servie=gabarits.construire_prompt(
                         ifs, [(i.position, a) for i, a in resultat.historique[:rang]]
                     ),
-                    sortie_brute=f"je choisis.\nACTION: {action.value}",
+                    # Vocabulaire obfusqué, comme une vraie sortie de modèle :
+                    # le canonique (`bet`, `fold`) ne sort jamais du moteur, et
+                    # l'écrire ici déclencherait à tort le détecteur.
+                    sortie_brute=f"je choisis.\nACTION: {rendre_action(action)}",
                     action_parsee=action.value,
                     parsing="ok",
                     resultat_manche=gain_agent if dernier else None,
@@ -398,6 +402,91 @@ def test_j3_aucune_censure():
     texte = "c'est du poker"
     assert analyser(texte) != ()
     assert texte == "c'est du poker"
+
+
+TRADUCTIONS_MINI_RUN = [
+    # Relevé mot pour mot dans les sorties du mini-run du 2026-08-21 : le
+    # modèle traduit le lexique servi vers les termes du jeu source. La
+    # première version du détecteur laissait passer tout ce bloc.
+    'Si je « retenir » (check), je laisse l\'adversaire décider.',
+    'Si je « engager » (bet), l\'adversaire doit répondre.',
+    "Avec la meilleure main en première position, il ne faut pas fold.",
+    "On paie l'ante avant de recevoir son sceau.",
+]
+
+
+@pytest.mark.parametrize("texte", TRADUCTIONS_MINI_RUN)
+def test_j3_traductions_vers_le_jeu_source_detectees(texte):
+    """Régression du mini-run : « check », « bet », « fold », « main », « ante »."""
+    niveaux = {d.niveau for d in analyser(texte)}
+    assert NIVEAU_DEOBFUSCATION in niveaux, texte
+
+
+def test_j3_lexique_obfusque_ne_declenche_toujours_rien():
+    """Les nouveaux motifs ne doivent pas mordre sur le vocabulaire servi."""
+    for ligne in [
+        "épreuve 12 : l'Ouvrant, votre sceau Rhun, vous engagez, l'autre couvre, solde +2",
+        "Je retiens : mon sceau Tor ne vaut rien face à Vael ou Rhun.",
+        "Vous êtes le Répondant. Votre sceau : Vael.",
+    ]:
+        assert analyser(ligne) == (), ligne
+
+
+# ==========================================================================
+# J6 — recalcul du détecteur depuis les journaux
+# ==========================================================================
+
+
+def test_j6_recompte_depuis_les_journaux(tmp_path):
+    """Le détecteur se rejoue sur des données déjà acquises : c'est ce qui lui
+    permet d'évoluer sans invalider une campagne."""
+    from journal import recompter_run
+
+    fabriquer_run(tmp_path, K=4)
+    rapport = recompter_run(tmp_path)
+    assert rapport["series"]["0"]["deobfuscation"] == 0
+    assert rapport["total"] == {"deobfuscation": 0, "recitation": 0}
+
+
+def test_j6_recompte_voit_les_sorties_et_la_memoire(tmp_path):
+    """Les deux canaux sont balayés : ce que l'agent dit et ce qu'il retient."""
+    from journal import recompter_run
+
+    journal = fabriquer_run(tmp_path, K=4, condition="AE")
+    journal.ecrire_session(
+        EvenementSession(
+            session=1,
+            K=2,
+            positions={"J1": 1, "J2": 1},
+            memoire={"M_s": "", "M_s1": "C'est du poker de Kuhn.", "evenements": []},
+            pi_hat={},
+            mesures=Mesures(Fraction(0), Fraction(0), Fraction(0), Fraction(0), 0.0),
+            defauts={},
+        )
+    )
+    rapport = recompter_run(tmp_path)
+    assert rapport["series"]["1"]["deobfuscation"] >= 2  # « poker » et « kuhn »
+
+
+def test_j6_ecart_avec_le_compte_fige_est_rapporte(tmp_path):
+    """Ce que la campagne avait figé reste lisible à côté du recalcul — l'écart
+    entre les deux est la trace de l'amélioration du détecteur."""
+    from journal import recompter_run
+
+    journal = fabriquer_run(tmp_path, K=4)
+    journal.ecrire_session(
+        EvenementSession(
+            session=2,
+            K=2,
+            positions={"J1": 1, "J2": 1},
+            memoire={"M_s": "", "M_s1": "rien", "evenements": []},
+            pi_hat={},
+            mesures=Mesures(Fraction(0), Fraction(0), Fraction(0), Fraction(0), 0.0),
+            defauts={},
+            drapeaux_deobfuscation=[{"niveau": "deobfuscation", "regle": "ancien"}],
+        )
+    )
+    assert recompter_run(tmp_path)["logue_a_lepoque"] == {"deobfuscation": 1}
 
 
 # ==========================================================================

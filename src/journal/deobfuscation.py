@@ -46,6 +46,14 @@ MOTIFS: Mapping[str, tuple[tuple[str, str], ...]] = {
         (r"(?<![\w'’])[jqk](?![\w'’])", "abréviation de rang"),
         (r"\b(cartes?|deck|paquet)\b", "vocabulaire de cartes"),
         (r"\b(mise[rs]?|relance[rs]?|pot|tapis|showdown|abattage)\b", "jargon du jeu source"),
+        # Ajoutés après le mini-run du 2026-08-21 : le modèle traduit
+        # spontanément le lexique servi vers les termes anglais du jeu source
+        # (« si je « retenir » (check), […] si je « engager » (bet) »). C'est
+        # le signal de reconnaissance le plus net qui soit, et la version
+        # initiale du détecteur le laissait passer entièrement.
+        (r"\b(check|bet|call|fold|raise|all-?in)\b", "action du jeu source (anglais)"),
+        (r"\bmains?\b", "« main » au sens du jeu source"),
+        (r"\b(antes?|blindes?)\b", "mise forcée du jeu source"),
     ),
     NIVEAU_RECITATION: (
         (r"\bnash\b", "équilibre nommé"),
