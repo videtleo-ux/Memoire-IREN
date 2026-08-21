@@ -8,28 +8,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Le moteur (PRD 1) est stdlib pure — aucune dépendance. pytest suffit.
 # `python` sur le PATH pointe vers le venv d'Hermes (3.11, sans pip) : utiliser
 # l'interpréteur Anaconda, qui a pytest. Le code tourne sur les deux.
-"C:/Users/videt/anaconda3/python.exe" -m pytest -q          # suite complète (~3,5 s)
+"C:/Users/videt/anaconda3/python.exe" -m pytest -q          # suite complète (~8 s)
 "C:/Users/videt/anaconda3/python.exe" -m pytest -q -k t2    # un test de l'oracle
 ```
 
 `pyproject.toml` fixe `pythonpath = ["src"]` : les tests importent `moteur` sans installation.
+Les exécutables, eux, ont besoin de `PYTHONPATH=src` (le paquet n'est pas installé) :
+
+```bash
+PYTHONPATH=src python -m arbitre --condition SM --bot Station --K 20 --series 1   # un run
+PYTHONPATH=src python -m journal.rejouer C:/arene-runs/SM-station-r1/logs         # complétude
+PYTHONPATH=src python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv # CSV
+```
 
 ## Repository state
 
-Code présent (141 tests verts, zéro dépendance, aucun appel API dans la suite) :
+Build terminé — 184 tests verts, zéro dépendance, aucun appel API dans la suite :
 
 - `src/moteur/` + `tests/test_moteur.py` — PRD 1 : moteur de jeu, meilleure réponse, écart d'exploitation, lexique obfusqué (oracle T1–T9, 41 tests).
 - `src/harnais/` + `tests/test_harnais.py` — PRD 2 : gabarits de prompt obfusqués, parsing des actions, stores Hermes isolés par run, canari d'isolation, gel mémoire fichiers, trois conditions SM/ICL/AE (56 tests).
 - `src/journal/` + `tests/test_journal.py` — PRD 4 : schémas JSONL validés à l'écriture, détecteur dé-obfuscation/récitation, CSV dérivés, rejeu de complétude (44 tests).
+- `src/arbitre/` + `tests/test_arbitre.py` — PRD 3 : donnes dérivées et appariées, boucle session/manche, récap canonique, π̂ et mesures, plateau, reprise sur incident, intégrité de clôture, CLI de run (43 tests).
 
-Reste à écrire : `src/arbitre/` (PRD 3). La documentation de référence :
+Prochaine étape : le mini-run de bout en bout sur le modèle gratuit (`python -m arbitre`), premier appel API réel du projet. La documentation de référence :
 
 - `spec-build-arene-kuhn(1).md` — the original build specification (French). Authority on *what* to build; every clause is a fixed design decision.
 - `prd/00-vue-densemble.md` … `prd/04-logging-analyse.md` — the PRDs (French). Authority on *how* to build it: architecture, fixed cross-cutting decisions D1–D8, pinned parameters (K=200, N=3, obfuscated lexicon), analytic test oracle, schemas.
 - `CONTEXT.md` — living context: pilot constraints, verified environment findings (Hermes Agent install, its memory-persistence pitfalls, OneDrive pitfall), decisions made in discussion. **Read this first in any new session.**
 - `PROGRESS.md` — phase-by-phase status, open/blocking points, next action.
 
-**Before implementing, read (in order): `CONTEXT.md`, `prd/00-vue-densemble.md`, then the PRD of the component you're touching, with the spec as backstop.** Do not re-derive the design from first principles. Key resolved points to not re-litigate: the GTO constant dispute is settled (J1 calls with the middle card at α+1/3 = 2/3, self-verified by the `exploitability(GTO)=0` test — PRD 1 §4); all three memory conditions go through `hermes -z` with a dedicated `HERMES_HOME` per run; intra-session memory freezing is enforced by the referee via file snapshot/restore because Hermes persists memory writes immediately.
+**Before implementing, read (in order): `CONTEXT.md`, `prd/00-vue-densemble.md`, then the PRD of the component you're touching, with the spec as backstop.** Do not re-derive the design from first principles. Key resolved points to not re-litigate: the GTO constant dispute is settled (J1 calls with the middle card at α+1/3 = 2/3, self-verified by the `exploitability(GTO)=0` test — PRD 1 §4); all three memory conditions go through `hermes -z` with a dedicated `HERMES_HOME` per run; intra-session memory freezing is enforced by the referee via file snapshot/restore because Hermes persists memory writes immediately; deals are **derived** from the campaign seed (a pure function of `(graine, r, s, k)`), never drawn from a running generator — that is what makes the three conditions byte-for-byte paired.
 
 ## Project summary (from the spec)
 

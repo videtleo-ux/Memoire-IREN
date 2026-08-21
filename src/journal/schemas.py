@@ -31,7 +31,7 @@ from harnais.gabarits import HASH_REGLES
 
 #: Version du code d'arène, logué à chaque ligne : deux runs produits par deux
 #: versions différentes doivent être distinguables sans archéologie Git.
-VERSION_ARENE = "0.2.0"
+VERSION_ARENE = "0.3.0"
 
 
 def horodatage() -> str:
