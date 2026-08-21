@@ -17,8 +17,10 @@ après coup** :
 
 from __future__ import annotations
 
+import io
 import json
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -40,6 +42,7 @@ from arbitre import (
     preparer_run,
     sequence_donnes,
 )
+from arbitre import cli
 from arbitre.etat import FICHIER_TOURS_ABANDONNES
 from arbitre.integrite import FICHIER_TEMOIN, poser_temoin, verifier_temoin
 from arbitre.recap import ligne_manche
@@ -672,6 +675,36 @@ def test_temoin_disolation_detecte_un_store_remplace(tmp_path):
     (store.chemin / FICHIER_TEMOIN).unlink()
     with pytest.raises(EchecCanari, match="témoin"):
         verifier_temoin(store, marqueur)
+
+
+# ==========================================================================
+# Affichage du run (régression)
+# ==========================================================================
+
+
+def test_affichage_survit_a_une_console_cp1252(tmp_path, monkeypatch):
+    """Le premier mini-run est tombé **avant le moindre appel API** : la console
+    Windows est en cp1252 et l'en-tête contenait un « ≤ ». On dégrade
+    désormais l'affichage plutôt que le run — les journaux, eux, restent en
+    UTF-8, écrits par le journal et non par ici."""
+    arbitre = _jouer(tmp_path, Condition.SM, "Station", K=4, series=1)
+    (serie,) = _series(arbitre.config)
+    serie = dict(serie)
+    # Une anomalie d'intégrité cite des caractères qu'on ne peut pas prévoir.
+    serie["plateau"] = {"declare": "π̂ ≠ 0"}
+
+    console = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", newline="")
+    monkeypatch.setattr(sys, "stdout", console)
+    cli._console_tolerante()
+    cli._tracer(serie)  # ne doit pas lever
+
+
+def test_entete_de_run_encodable_en_cp1252(tmp_path):
+    """Nos propres chaînes, elles, doivent passer sans filet : le filet est là
+    pour les textes qu'on ne maîtrise pas, pas pour excuser les nôtres."""
+    config = _config(tmp_path, Condition.SM, "Station", K=4, series=1)
+    entete = f"run {config.run_id} — K={config.K}, séries au plus {config.series_prevues}"
+    entete.encode("cp1252")
 
 
 # ==========================================================================

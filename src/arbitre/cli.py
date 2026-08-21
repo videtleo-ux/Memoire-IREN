@@ -22,6 +22,7 @@ douteux ne doit pas passer inaperçu dans un enchaînement de scripts.
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -61,6 +62,26 @@ def _analyseur() -> argparse.ArgumentParser:
     return analyseur
 
 
+def _console_tolerante() -> None:
+    """Rend l'affichage insensible à l'encodage de la console.
+
+    La console Windows tourne en cp1252 : un « ≤ » dans l'en-tête suffisait à
+    faire tomber le run **avant le premier appel API**. On garde l'encodage de
+    la console — les accents français y passent — et on remplace ce qui n'y
+    entre pas. Ce sont les messages qu'on dégrade, jamais les données : les
+    journaux sont écrits en UTF-8 par le journal, indépendamment d'ici.
+
+    Le filet est nécessaire au-delà de nos propres chaînes : les anomalies
+    d'intégrité citent des « ≠ » et des « π̂ » qu'on ne peut pas prévoir une
+    par une.
+    """
+    for flux in (sys.stdout, sys.stderr):
+        try:
+            flux.reconfigure(errors="replace")
+        except (AttributeError, ValueError):  # flux redirigé, non reconfigurable
+            pass
+
+
 def _tracer(ligne: Mapping[str, Any]) -> None:
     mesures = ligne["mesures"]
     defauts = ligne["defauts"]
@@ -74,6 +95,7 @@ def _tracer(ligne: Mapping[str, Any]) -> None:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    _console_tolerante()
     arguments = _analyseur().parse_args(argv)
 
     parametres = (
@@ -90,7 +112,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         parametres=parametres,
     )
 
-    print(f"run {config.run_id} — K={config.K}, séries ≤ {config.series_prevues}")
+    print(f"run {config.run_id} — K={config.K}, séries au plus {config.series_prevues}")
     print(f"  dossier : {config.dossier}")
 
     arbitre = preparer_run(
