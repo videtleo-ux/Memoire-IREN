@@ -27,7 +27,7 @@ Dernière mise à jour : 2026-08-21. Convention : ✅ fait · 🔄 en cours · �
 - ✅ Arbitre & orchestration (PRD 3) — `src/arbitre/`, `tests/test_arbitre.py`, **43 tests**. Donnes *dérivées* de la graine de campagne (fonction pure de `(graine, r, s, k)`, donc appariées entre conditions par construction), flux du bot seedé par manche, boucle session/manche avec gel avant chaque manche, manche atomique (rejeu à donne identique sur `ErreurHarnais`), récap canonique, π̂ + mesures exactes, critère de plateau automatisé, état de run et reprise sur incident, vérifications d'intégrité de clôture, CLI `python -m arbitre`.
 - ✅ Test de bout en bout : mini-run `SM-station-r1` (1 série, K = 20, Station, SM, `tencent/hy3:free`) exécuté le 2026-08-21. Intégrité verte, rejeu complet, **100 % de parsing**, positions 10/10, canari et gel prouvés sur le binaire réel, écart = 1/18 exact. Quatre constats consignés en `CONTEXT.md` §4 quater.
 
-Total : **200 tests verts en ~8 s**, toujours sans dépendance ni appel API dans la suite.
+Total : **201 tests verts en ~13 s**, toujours sans dépendance ni appel API dans la suite.
 
 ## Phase 3 — Pilote de calibrage (🔄 quasi terminé, 2026-08-21)
 
@@ -36,7 +36,7 @@ Total : **200 tests verts en ~8 s**, toujours sans dépendance ni appel API dans
 - ✅ **Coût projeté** : 41 $ attendu (plateau à 10 séries), 63 $ au pire (plafond 16). Mesuré : 0,172 $ la série de 200 manches.
 - ✅ **Les trois conditions tournent pour de vrai.** AE atteint la meilleure réponse exacte après une seule réflexion ; ICL descend plus lentement ; SM plafonne à ~0,23 — pas d'effet plafond, la marge de mesure existe.
 - ✅ **Deux failles majeures trouvées et corrigées** (pièges n°7 et n°8, `CONTEXT.md` §4 quinquies) : `CLAUDE.md` injecté dans le prompt de l'agent, et les échecs de fournisseur pris pour des réponses.
-- ⚠️ **À trancher avant campagne** : la fenêtre ICL ne contiendrait qu'une seule série à K = 150.
+- ✅ **Fenêtre ICL portée à 13 000 tokens** (3 séries entières à K=150). À 6 000, elle n'en contenait plus qu'une et H3 devenait tautologique.
 - ⬜ Installation + vérification d'Hermes Agent sur le Mac M2 (si campagne multi-machines confirmée)
 
 ## Phase 4 — Campagne (⬜)
@@ -58,7 +58,7 @@ Total : **200 tests verts en ~8 s**, toujours sans dépendance ni appel API dans
 |---|---|---|
 | Papier Loriente & Diez à transmettre | Léo | Aucun sur le build (D6) ; manque un recoupement citable dans le mémoire |
 | Hermes non installé sur le Mac M2 | Léo | Campagne mono-machine (plus lente), pas d'invalidation |
-| Fenêtre ICL : une seule série y tient à K=150 | Léo | Le « dents de scie » attendu d'ICL disparaît faute d'empilement à évincer |
+| Audit indépendant avant campagne | Léo | Deux failles de contamination trouvées par hasard au pilote ; une troisième passerait inaperçue |
 
 ## Journal des sessions de travail
 

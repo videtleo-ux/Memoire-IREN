@@ -1,6 +1,6 @@
 # 2. Méthodologie
 
-*Mémoire de M2 — IREN, année 2025-2026. Version de travail, août 2026.*
+*Mémoire de M2 — IREN, année 2025-2026. Version de travail, août 2026 — paramètres figés au pilote de calibrage.*
 *Dispositif : [github.com/videtleo-ux/Memoire-IREN](https://github.com/videtleo-ux/Memoire-IREN)*
 
 > **Note de structure.** Ce document couvre 2.0 (hypothèses), 2.2 (les expériences), 2.3 (l'architecture) et 2.4 (validité interne). La section 2.1 « Présentation d'Hermès Agent » est déjà rédigée ; deux corrections à y apporter sont signalées en annexe A de ce document. Le bloc « Limites » en fin de document est destiné à la section *Limites et extensions* du plan, pas au chapitre de méthode.
@@ -105,7 +105,7 @@ Le modèle de langage est tenu constant, ainsi que ses paramètres d'inférence,
 
 **SM** n'est pas un simple témoin technique. Puisque le modèle a rencontré ce jeu et sa solution durant son pré-entraînement, la condition sans mémoire mesure empiriquement **le niveau de jeu récité** — ce que le modèle produit à partir de sa seule mémorisation, sans aucune expérience de cet adversaire-ci. C'est la ligne de base contre laquelle H1 se juge, et elle est observée, non postulée.
 
-**ICL** représente la solution naïve. La fenêtre est bornée à 6 000 tokens et l'éviction se fait par **séries entières**, jamais en tronquant une série : le profil d'oubli attendu doit provenir de la disparition des séries anciennes, non d'un artefact de découpe.
+**ICL** représente la solution naïve. La fenêtre est bornée à 13 000 tokens — trois séries entières — et l'éviction se fait par **séries complètes**, jamais en tronquant une série : le profil d'oubli attendu doit provenir de la disparition des séries anciennes, non d'un artefact de découpe. Le dimensionnement de cette fenêtre est justifié en §2.2.6 ; il conditionne la portée de H3.
 
 **AE** est le traitement d'intérêt. Deux propriétés en font l'objet même de l'observation :
 
@@ -181,17 +181,29 @@ L'alternance des positions est déterministe — l'agent ouvre les manches impai
 
 | Paramètre | Valeur | Justification |
 |---|---|---|
-| Manches par série (K) | 200 | compromis entre stabilité de `π̂` et coût |
+| Modèle | `openai/gpt-5.6-luna` | arrêté au pilote ; 100 % de réponses exploitables sur 260 décisions |
+| Effort de raisonnement | `medium` | mesuré équivalent à `low` en coût et en latence ; retenu pour écarter toute objection de bridage |
+| Manches par série (K) | **150** | validé au pilote : l'écart y diffère de 0,0032 de celui mesuré à K = 200 |
 | Réplications | 3 | contrainte de budget ; compensée par l'appariement |
 | Séries — SM | 3 | rien à accumuler ; trois points établissent le niveau récité et sa dispersion |
-| Séries — ICL et AE | 8 à 20 | arrêt automatisé au plateau, borné des deux côtés |
-| Fenêtre ICL | 6 000 tokens | éviction par séries entières |
+| Séries — ICL et AE | 8 à **16** | arrêt automatisé au plateau, borné des deux côtés |
+| Fenêtre ICL | **13 000 tokens** | contient trois séries entières — cf. encadré ci-dessous |
 
-La **règle d'arrêt** est automatisée et enregistrée à chaque évaluation : le plateau est déclaré lorsque, avec au moins huit séries, la pente de la régression de l'écart sur les quatre dernières est supérieure ou égale à `−0,02` jeton/manche/série **et** que la dispersion de ces quatre valeurs est inférieure à `0,05`. Les deux conditions sont nécessaires : la pente seule déclarerait un plateau sur une trajectoire périodique, la dispersion seule le déclarerait au milieu d'une descente lente. L'exécution se poursuit ensuite deux séries au-delà, afin que le plateau soit constaté et non anticipé.
+La **règle d'arrêt** est automatisée et enregistrée à chaque évaluation : le plateau est déclaré lorsque, avec au moins huit séries, la pente de la régression de l'écart sur les quatre dernières est supérieure ou égale à `−0,02` jeton/manche/série **et** que la dispersion de ces quatre valeurs est inférieure à `0,05`. Les deux conditions sont nécessaires : la pente seule déclarerait un plateau sur une trajectoire périodique, la dispersion seule le déclarerait au milieu d'une descente lente. L'exécution se poursuit ensuite deux séries au-delà, afin que le plateau soit constaté et non anticipé. Le plafond de seize séries borne le coût **sans toucher à la règle** : en faire un compte fixe reviendrait à remplacer un critère scientifique par une contrainte budgétaire, ce qu'il faudrait alors énoncer comme tel.
+
+> **Le dimensionnement de la fenêtre ICL est une décision de validité, pas de budget.** Le récapitulatif pèse 109 caractères par manche (mesuré), soit environ 4 100 tokens pour une série de 150 manches. Avec une fenêtre de 6 000 tokens et une éviction par séries entières, la condition ICL n'aurait retenu qu'**une seule** série passée : elle aurait été incapable d'accumuler *par construction*, et H3 se serait réduite à « une mémoire qui ne peut pas accumuler n'accumule pas » — un artefact de paramétrage présenté comme un résultat. La fenêtre est donc portée à 13 000 tokens, soit trois séries : ICL accumule, puis sature et évince, ce qui rend la comparaison avec AE informative dans les deux sens. L'alternative envisagée — comprimer le récapitulatif pour en faire tenir davantage — a été écartée : elle aurait modifié le **stimulus** que les deux conditions consomment, et non un paramètre de la condition étudiée.
 
 **Pilote de calibrage.** Une exécution courte précède la campagne et tranche, dans cet ordre de véto : taux de réponses exploitables (seuil de 98 %), coût par manche et projection budgétaire, stabilité de `π̂` à K = 200, latence, puis constantes de la règle d'arrêt. Les paramètres élus sont figés avant la campagne : un changement en cours de route rendrait les exécutions non comparables.
 
-Un premier test d'intégration a été conduit (une série, K = 20, adversaire Station, traitement SM) : **100 % de réponses exploitables sans relance ni action imposée**, positions exactement équilibrées, isolation et gel vérifiés sur le binaire réel, reconstruction complète de l'expérience depuis les seuls journaux. Le coût mesuré s'établit à environ 1 300 tokens d'entrée et 3 600 de sortie par manche, très au-dessus de l'estimation initiale ; les paramètres d'inférence seront ajustés en conséquence au pilote.
+Le pilote a été conduit en sept exécutions réelles, couvrant les trois traitements. Ses sorties :
+
+1. **Taux de réponses exploitables : 260 sur 260**, sans une seule relance ni action imposée — très au-dessus du seuil de véto.
+2. **Coût mesuré : 0,86 millième de dollar par décision**, soit 0,172 $ pour une série de 200 manches. Projection de campagne : 47 $ attendu si le plateau survient à dix séries, 70 $ si toutes les exécutions vont au plafond de seize.
+3. **Stabilité de `π̂` : K = 150 validé sur pièces.** Les distributions étant dérivées de `(graine, r, s, k)`, les 150 premières manches d'une série de 200 *sont* la série de 150, à l'octet près : l'écart se recalcule donc par sous-échantillonnage, sans exécution supplémentaire. Résultat : |écart(K=150) − écart(K=200)| = **0,0032**, quinze fois sous le seuil retenu.
+4. **Latence : 11,7 secondes par décision.** L'unité parallélisable étant l'exécution, six en parallèle ramènent la campagne sous vingt heures.
+5. **Sensibilité du dispositif vérifiée.** L'écart mesuré en condition sans mémoire s'établit à 0,23, loin de zéro : il reste toute la marge nécessaire pour qu'une adaptation soit observable. L'hypothèse d'un effet plafond — un modèle si compétent que la mémoire ne changerait rien — est écartée.
+
+L'effort de raisonnement a fait l'objet d'un test dédié, deux séries de 200 manches jouées **sur les mêmes distributions** : `low` et `medium` produisent le même volume de sortie (445 contre 427 tokens), la même latence et le même coût. `medium` est retenu, puisqu'il ne coûte rien de plus et qu'il retire par avance l'objection d'un modèle bridé pour des raisons budgétaires.
 
 ### 2.2.7 Plan d'analyse
 
@@ -234,6 +246,9 @@ La validité interne repose sur le contrôle de l'environnement de choix et sur 
 | Menace | Dispositif |
 |---|---|
 | Confusion traitement × harnais | chemin logiciel unique pour les trois traitements ; prompts identiques hors la rubrique mémoire ; empreinte du texte de règles enregistrée sur chaque ligne de journal |
+| Reconnaissance du jeu, récitation | recodage vérifié automatiquement ; double détecteur sur les sorties **et** sur le canal mémoire, recalculable *a posteriori* ; identification portée par l'asymétrie des adversaires (cf. §L.1 bis) |
+| **Fuite du dispositif vers l'agent** | sous-processus confiné dans un répertoire vide ; taille et contenu du prompt système vérifiés sur pièces (cf. encadré ci-dessous) |
+| **Panne de fournisseur prise pour une réponse** | signatures d'échec reconnues ; manche rejouée à distribution identique ; interruption de l'exécution après trois tentatives |
 | Variance de la distribution | distributions dérivées et appariées entre traitements ; mesure portant sur la politique et non sur les gains |
 | Contamination entre exécutions | répertoire de mémoire dédié par exécution ; marqueur d'isolation écrit par l'agent et vérifié avant démarrage et à la clôture |
 | Violation silencieuse du gel | instantané restauré avant chaque manche ; toute tentative d'écriture enregistrée |
@@ -243,6 +258,16 @@ La validité interne repose sur le contrôle de l'environnement de choix et sur 
 | Perte de données en cours de campagne | journaux en ajout seul ; reprise à la frontière de série ; série interrompue rejouée intégralement, tentative avortée conservée à part |
 
 Le contrôle négatif que constitue l'adversaire jouant l'équilibre mérite d'être souligné : il fournit une **falsification interne** du dispositif de mesure lui-même. Toute décroissance de l'écart observée contre un adversaire inexploitable invaliderait l'ensemble des mesures de la campagne.
+
+#### Deux canaux de contamination découverts au calibrage
+
+Le pilote a mis au jour deux défauts qui n'apparaissaient dans aucun test automatisé et qu'aucun journal n'aurait signalés. Ils sont rapportés ici parce qu'ils appartiennent au même genre : **des défaillances qui ne ressemblent pas à des erreurs dans les résultats, mais à des résultats.**
+
+**Le premier tenait à l'échafaudage de l'agent.** L'outil utilisé explore le répertoire de travail à la recherche de fichiers de consignes et les verse dans son prompt système. L'arène étant exécutée depuis le dépôt du projet, l'agent recevait à chaque manche un document décrivant le jeu réel, la constante d'équilibre et l'exploitation propre à chaque adversaire. Mesuré : 11 633 octets de consignes du dépôt dans le prompt système, contre zéro depuis un répertoire vide. Autrement dit, l'agent disposait de la solution de l'expérience — et sa « reconnaissance du jeu » n'en était pas une (cf. §L.1 bis). *Remède* : le sous-processus est confiné dans un répertoire vide dédié, sous le magasin isolé de l'exécution ; un test de non-régression y place un fichier de consignes piégé et vérifie qu'il n'est pas lu.
+
+**Le second tenait au canal d'erreur.** Une panne de fournisseur — quota épuisé, limite de débit — était restituée sur la sortie standard avec un code de retour nul. Le harnais la prenait pour une réponse du modèle : l'extraction d'action échouait, l'action passive était imposée, et l'exécution se terminait normalement en ayant enregistré des dizaines de décisions par défaut **comme des données**. *Remède* : les signatures d'échec de fournisseur sont reconnues et converties en erreur ; la manche est alors rejouée à distribution identique, et l'exécution s'interrompt après trois tentatives infructueuses plutôt que de produire des données douteuses.
+
+Ces deux corrections invalident les exécutions de calibrage qui les précèdent ; celles-ci ont été rejouées. On en tire un principe de conduite pour la campagne : **la frontière entre le dispositif expérimental et l'outillage tiers qu'il pilote est l'endroit où les défauts silencieux se logent**, et elle mérite une vérification empirique propre — lire ce que l'agent reçoit réellement — et non seulement une couverture par les tests.
 
 ---
 
@@ -256,17 +281,27 @@ Le contrôle négatif que constitue l'adversaire jouant l'équilibre mérite d'�
 
 ## Bloc destiné à la section « Limites et extensions »
 
-### L.1 Le recodage du jeu ne garantit pas l'ignorance du modèle
+### L.1 Le raisonnement de l'agent n'est qu'en partie observable
 
-Le jeu est servi sous un vocabulaire réécrit, dans l'intention de limiter le rappel d'une solution mémorisée — réponse directe à l'objection de mémorisation superficielle relevée en §1.4.3. **Cette précaution n'atteint pas son objectif.** Dès le premier test d'intégration, sans aucune mémoire et à la troisième manche, le modèle a nommé le jeu source et énoncé la stratégie d'équilibre associée dans son raisonnement libre. Sur vingt manches, quatorze portent une mention du jeu réel et treize une référence à des constantes d'équilibre.
+L'axe « biais de décision » (H4) repose sur la comparaison entre ce que la délibération de l'agent désigne et ce qu'il joue. Or le modèle retenu **ne restitue pas l'essentiel de son raisonnement** : sur 200 décisions, la sortie visible tient en quatre tokens — la seule ligne d'action — dans 141 cas, tandis que le fournisseur facture en moyenne 420 tokens de chaîne de pensée interne, jamais rendus.
 
-Trois conséquences, assumées :
+Trois conséquences :
 
-1. **Le recodage n'est pas un contrôle, c'est au mieux un ralentisseur.** Il est conservé — le changer en cours de projet romprait la comparabilité des exécutions — mais il n'est pas revendiqué comme garantie.
-2. **La reconnaissance du jeu devient une covariable mesurée.** Un détecteur relève, sur chaque sortie et sur chaque contenu de mémoire, les mentions du jeu source et des constantes d'équilibre. Le taux est rapporté par série et croisé avec les mesures d'adaptation. Aucune censure n'est appliquée : on observe.
-3. **L'identification repose ailleurs.** Elle ne dépend pas de l'ignorance du modèle mais de l'**asymétrie des adversaires** : aucune stratégie récitée ne peut faire décroître conjointement l'écart contre un adversaire qui paie systématiquement et contre un adversaire qui se couche systématiquement. La condition sans mémoire fournit par ailleurs la mesure empirique du niveau récité, ce qui rend la comparaison possible sans supposer quoi que ce soit sur ce que le modèle sait.
+1. **La mesure automatique d'incohérence porte sur une minorité des décisions.** Elle reste valide sur celles où l'agent verbalise, mais son dénominateur n'est plus l'ensemble des décisions. Le taux doit être rapporté comme tel, et non comme une fréquence sur la campagne entière.
+2. **La comparabilité avec la littérature en souffre.** GTBENCH et la *Game Reasoning Arena* classent les justifications textuelles ; sans texte, l'appariement avec leurs taxonomies devient partiel.
+3. **Le second volet de H4 n'est pas affecté.** La dégénérescence des stratégies mixtes se lit directement dans `π̂`, indépendamment de toute verbalisation — et le pilote y a déjà relevé un signal net : contre un adversaire qui paie systématiquement, l'agent n'engage le sceau dominant que dans 43 à 67 % des cas, alors que l'engagement y est dominant sans calcul.
 
-Ce constat constitue lui-même un résultat : il corrobore empiriquement, sur un cas contrôlé, l'objection de mémorisation superficielle formulée dans la littérature.
+Deux remèdes ont été envisagés puis écartés avant la campagne : forcer une justification écrite par la consigne — cela modifierait le stimulus servi aux trois traitements — et relever l'effort de raisonnement, dont le pilote a montré qu'il ne change pas le volume rendu.
+
+### L.1 bis Le recodage du jeu : portée réelle
+
+Le jeu est servi sous un vocabulaire réécrit, en réponse à l'objection de mémorisation superficielle relevée en §1.4.3.
+
+Un premier test d'intégration avait paru le mettre en échec : le modèle nommait le jeu source et récitait la stratégie d'équilibre dès la troisième manche, sans aucune mémoire, dans quatorze manches sur vingt. **Ce constat était un artefact du harnais, non un comportement du modèle.** L'agent recevait alors, injecté à son insu dans son prompt système, un document de travail du dépôt décrivant le jeu réel et l'exploitation de chaque adversaire (cf. §2.4). Le canal fermé, la mesure a été refaite : **zéro mention du jeu source sur 200 sorties**, et cinq occurrences du mot « équilibre » sans que le jeu soit jamais nommé.
+
+Le recodage n'est pas revendiqué comme une garantie pour autant, et ce pour deux raisons. D'abord parce que la verbalisation est rare (L.1) : le détecteur n'a que peu de texte à examiner, et l'absence de signal y est un argument faible. Ensuite parce qu'une reconnaissance silencieuse — un modèle qui identifie le jeu sans le nommer — resterait invisible par construction.
+
+L'identification de l'effet ne repose donc pas sur l'ignorance supposée du modèle, mais sur l'**asymétrie des adversaires** : aucune stratégie récitée ne peut faire décroître conjointement l'écart contre un adversaire qui paie systématiquement et contre un adversaire qui se couche systématiquement. La condition sans mémoire fournit par ailleurs la mesure empirique du niveau récité. La reconnaissance du jeu est traitée comme une **covariable mesurée**, rapportée par série et recalculable *a posteriori* sur les journaux, sans qu'aucune censure ne soit appliquée.
 
 ### L.2 Autres limites
 
