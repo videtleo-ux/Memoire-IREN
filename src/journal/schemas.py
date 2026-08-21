@@ -118,6 +118,9 @@ class EvenementTour:
     historique_final: Sequence[str] | None = None
     flags: Sequence[str] = ()
     tokens: Mapping[str, int | None] = field(default_factory=lambda: {"in": None, "out": None})
+    #: Coût facturé par le fournisseur pour cette décision (son chiffre, pas
+    #: le nôtre) — le suivi de budget d'une campagne se lit ligne à ligne.
+    cout_usd: float | None = None
     latence_ms: int = 0
 
     def en_json(self) -> dict[str, Any]:
@@ -138,6 +141,7 @@ class EvenementTour:
             ),
             "flags": list(self.flags),
             "tokens": dict(self.tokens),
+            "cout_usd": self.cout_usd,
             "latence_ms": self.latence_ms,
         }
 

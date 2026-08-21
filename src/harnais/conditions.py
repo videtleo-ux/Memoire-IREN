@@ -34,8 +34,20 @@ from .hermes import Invocateur, Reponse
 from .parsing import RAPPEL_FORMAT, Parsing, extraire_action
 from .stores import LIMITE_NOTES, TOOLSET_MEMOIRE, TOOLSET_SANS_OUTIL, Store
 
-#: Fenêtre ICL (PRD 2 §5.1, paramètre figé du PRD 0 §3).
-FENETRE_ICL_TOKENS = 6000
+#: Fenêtre ICL. Portée de 6 000 à 13 000 tokens au pilote du 2026-08-21,
+#: pour qu'elle contienne **trois séries entières** et non une seule.
+#:
+#: Le récap pèse 109 caractères par manche (mesuré), soit ~4 088 tokens pour
+#: une série de K = 150. À 6 000 tokens, l'éviction se faisant par séries
+#: entières, la fenêtre n'en retenait plus qu'une : ICL devenait « la série
+#: précédente, un point c'est tout », incapable d'accumuler **par
+#: construction**. H3 se réduisait alors à « une mémoire qui ne peut pas
+#: accumuler n'accumule pas » — un artefact de paramétrage, pas un résultat.
+#:
+#: À 13 000, ICL accumule sur trois séries puis sature et évince. La marge
+#: est calculée pour rester à 3 même si les récaps s'allongent un peu :
+#: 3 × 4 088 = 12 264 ≤ 13 000 < 16 352 = 4 × 4 088.
+FENETRE_ICL_TOKENS = 13000
 
 #: Conversion caractères → tokens. Hermes ne donne pas de tokeniseur au
 #: harnais et le dépôt est sans dépendance : on borne la fenêtre sur une
@@ -88,6 +100,10 @@ class Decision:
     tokens_raisonnement: int | None = None
     #: Entrée servie depuis le cache de préfixe (facturée ~10x moins).
     tokens_cache_lus: int | None = None
+    #: Coût estimé par le fournisseur pour cette décision. On pourrait le
+    #: recalculer depuis les tokens, mais c'est le fournisseur qui facture :
+    #: son chiffre fait foi pour le suivi de budget.
+    cout_usd: float | None = None
     modele: str | None = None
     invocations: int = 1
 
@@ -186,6 +202,7 @@ class Harnais:
         tokens_in, tokens_out = reponse.tokens_entree, reponse.tokens_sortie
         tokens_rais = reponse.tokens_raisonnement
         tokens_cache = reponse.tokens_cache_lus
+        cout = reponse.cout_usd
         flags: list[str] = list(self._detecter_ecriture())
         flags.extend(_pseudo_outil(reponse.texte))
 
@@ -198,6 +215,7 @@ class Harnais:
             tokens_out = _additionner(tokens_out, relance.tokens_sortie)
             tokens_rais = _additionner(tokens_rais, relance.tokens_raisonnement)
             tokens_cache = _additionner(tokens_cache, relance.tokens_cache_lus)
+            cout = (cout or 0) + (relance.cout_usd or 0) if cout is not None else relance.cout_usd
             flags.extend(self._detecter_ecriture())
             flags.extend(_pseudo_outil(relance.texte))
             action, parsing = extraire_action(relance.texte, infoset.actions_legales)
@@ -219,6 +237,7 @@ class Harnais:
             tokens_sortie=tokens_out,
             tokens_raisonnement=tokens_rais,
             tokens_cache_lus=tokens_cache,
+            cout_usd=cout,
             modele=reponse.modele,
             invocations=invocations,
         )
