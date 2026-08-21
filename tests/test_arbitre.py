@@ -656,6 +656,22 @@ def test_integrite_detecte_une_serie_incomplete(tmp_path):
     assert any("manches loguées" in a for a in rapport.anomalies)
 
 
+def test_cloture_revoit_les_voisins_apparus_pendant_le_run(tmp_path):
+    """Six runs qui démarrent ensemble : le canari de chacun ne voit que les
+    stores déjà créés, souvent aucun. Le contrôle croisé d'isolation serait
+    vide pour toujours si on gardait la liste de la préparation. À la
+    clôture, tous les voisins existent — c'est là que la vérification vaut."""
+    premier = _jouer(tmp_path, Condition.SM, "Station", K=4, series=1)
+    assert premier.autres_stores == []  # il était seul au démarrage
+
+    _jouer(tmp_path, Condition.AE, "Station", K=4, series=1)  # voisin apparu depuis
+
+    rapport = premier.clore()
+    assert premier.autres_stores, "les voisins doivent être recalculés à la clôture"
+    assert rapport.controles["temoin_isolation"] == "intact"
+    assert rapport.ok, rapport.anomalies
+
+
 def test_temoin_disolation_detecte_une_fuite(tmp_path):
     """Le témoin retrouvé ailleurs = deux runs partagent un store."""
     store = Store(chemin=tmp_path / "store")

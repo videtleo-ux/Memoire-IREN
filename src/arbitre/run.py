@@ -452,7 +452,21 @@ class Arbitre:
     # -- clôture -----------------------------------------------------------
 
     def clore(self) -> integrite.RapportIntegrite:
-        """Vérifications d'intégrité de fin de run (PRD 3 §8), écrites au log."""
+        """Vérifications d'intégrité de fin de run (PRD 3 §8), écrites au log.
+
+        La liste des stores voisins est **recalculée ici**, et non reprise de
+        la préparation. Quand 6 runs démarrent ensemble, le canari de chacun
+        ne voit que les stores déjà créés — souvent aucun. Le contrôle croisé
+        d'isolation serait alors vide au démarrage et le resterait à la
+        clôture. À la fin du run, en revanche, tous les voisins existent : la
+        vérification du témoin devient complète, et c'est elle qui fait foi.
+        """
+        voisins = [
+            chemin
+            for chemin in stores_actifs(self.config.racine)
+            if self.store is None or chemin != self.store.chemin
+        ]
+        self.autres_stores = voisins
         rapport = integrite.verifier_run(
             dossier_logs=self.config.dossier_logs,
             graine=self.config.graine,
