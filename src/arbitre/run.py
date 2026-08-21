@@ -237,7 +237,7 @@ class Arbitre:
         tours: list[Mapping[str, Any]] = []
         positions = {"J1": 0, "J2": 0}
         defauts = {"actions_par_defaut": 0, "relances": 0, "erreurs_harnais": 0}
-        tokens = {"in": 0, "out": 0}
+        tokens = {"in": 0, "out": 0, "raisonnement": 0}
         drapeaux: list[Drapeau] = []
 
         for k in range(1, self.config.K + 1):
@@ -429,6 +429,7 @@ class Arbitre:
                     tokens={
                         "in": prise.decision.tokens_entree,
                         "out": prise.decision.tokens_sortie,
+                        "raisonnement": prise.decision.tokens_raisonnement,
                     },
                     latence_ms=prise.decision.latence_ms,
                 )
@@ -471,6 +472,7 @@ def _cumuler(
         defauts["relances"] += decision.invocations - 1
     tokens["in"] += decision.tokens_entree or 0
     tokens["out"] += decision.tokens_sortie or 0
+    tokens["raisonnement"] += decision.tokens_raisonnement or 0
 
 
 # --------------------------------------------------------------------------

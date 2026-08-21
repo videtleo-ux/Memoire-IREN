@@ -84,6 +84,8 @@ class Decision:
     latence_ms: int = 0
     tokens_entree: int | None = None
     tokens_sortie: int | None = None
+    #: Part invisible de la sortie (chaîne de pensée facturée, jamais rendue).
+    tokens_raisonnement: int | None = None
     modele: str | None = None
     invocations: int = 1
 
@@ -180,6 +182,7 @@ class Harnais:
         invocations = 1
         latence = reponse.latence_ms
         tokens_in, tokens_out = reponse.tokens_entree, reponse.tokens_sortie
+        tokens_rais = reponse.tokens_raisonnement
         flags: list[str] = list(self._detecter_ecriture())
         flags.extend(_pseudo_outil(reponse.texte))
 
@@ -190,6 +193,7 @@ class Harnais:
             latence += relance.latence_ms
             tokens_in = _additionner(tokens_in, relance.tokens_entree)
             tokens_out = _additionner(tokens_out, relance.tokens_sortie)
+            tokens_rais = _additionner(tokens_rais, relance.tokens_raisonnement)
             flags.extend(self._detecter_ecriture())
             flags.extend(_pseudo_outil(relance.texte))
             action, parsing = extraire_action(relance.texte, infoset.actions_legales)
@@ -209,6 +213,7 @@ class Harnais:
             latence_ms=latence,
             tokens_entree=tokens_in,
             tokens_sortie=tokens_out,
+            tokens_raisonnement=tokens_rais,
             modele=reponse.modele,
             invocations=invocations,
         )

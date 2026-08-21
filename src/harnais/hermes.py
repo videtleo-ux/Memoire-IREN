@@ -54,6 +54,16 @@ class Reponse:
     tentatives: int
     tokens_entree: int | None = None
     tokens_sortie: int | None = None
+    #: Part de `tokens_sortie` consommée par la chaîne de pensée interne du
+    #: modèle — facturée, jamais rendue sur stdout, donc jamais loguée en
+    #: texte. Mesurée à 87–94 % de la sortie au pilote du 2026-08-21 : c'est
+    #: la quantité qui commande le coût **et** la durée de la campagne, et
+    #: elle serait invisible sans ce champ.
+    tokens_raisonnement: int | None = None
+    #: Appels réellement émis par la boucle d'agent pour cette invocation.
+    #: Vaut 1 en configuration d'arène ; au-delà, la boucle aurait rebouclé
+    #: et la manche coûterait plus que prévu.
+    appels_api: int | None = None
     modele: str | None = None
     cout_usd: float | None = None
     erreur: str | None = None
@@ -63,7 +73,11 @@ class Reponse:
         return self.erreur is None and bool(self.texte.strip())
 
     def tokens(self) -> Mapping[str, int | None]:
-        return {"in": self.tokens_entree, "out": self.tokens_sortie}
+        return {
+            "in": self.tokens_entree,
+            "out": self.tokens_sortie,
+            "raisonnement": self.tokens_raisonnement,
+        }
 
 
 class Invocateur(Protocol):
@@ -197,6 +211,8 @@ def _usage(rapport: Path) -> Mapping[str, object]:
     vide: dict[str, object] = {
         "tokens_entree": None,
         "tokens_sortie": None,
+        "tokens_raisonnement": None,
+        "appels_api": None,
         "modele": None,
         "cout_usd": None,
     }
@@ -207,6 +223,8 @@ def _usage(rapport: Path) -> Mapping[str, object]:
     return {
         "tokens_entree": donnees.get("input_tokens"),
         "tokens_sortie": donnees.get("output_tokens"),
+        "tokens_raisonnement": donnees.get("reasoning_tokens"),
+        "appels_api": donnees.get("api_calls"),
         "modele": donnees.get("model"),
         "cout_usd": donnees.get("estimated_cost_usd"),
     }
