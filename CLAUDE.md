@@ -16,7 +16,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-Code présent : `src/moteur/` (PRD 1 — moteur de jeu, meilleure réponse, écart d'exploitation, lexique obfusqué) et `tests/test_moteur.py` (oracle T1–T9, 41 tests). Le reste est encore de la documentation (implémentation en Phase 2, voir `PROGRESS.md`) :
+Code présent (141 tests verts, zéro dépendance, aucun appel API dans la suite) :
+
+- `src/moteur/` + `tests/test_moteur.py` — PRD 1 : moteur de jeu, meilleure réponse, écart d'exploitation, lexique obfusqué (oracle T1–T9, 41 tests).
+- `src/harnais/` + `tests/test_harnais.py` — PRD 2 : gabarits de prompt obfusqués, parsing des actions, stores Hermes isolés par run, canari d'isolation, gel mémoire fichiers, trois conditions SM/ICL/AE (56 tests).
+- `src/journal/` + `tests/test_journal.py` — PRD 4 : schémas JSONL validés à l'écriture, détecteur dé-obfuscation/récitation, CSV dérivés, rejeu de complétude (44 tests).
+
+Reste à écrire : `src/arbitre/` (PRD 3). La documentation de référence :
 
 - `spec-build-arene-kuhn(1).md` — the original build specification (French). Authority on *what* to build; every clause is a fixed design decision.
 - `prd/00-vue-densemble.md` … `prd/04-logging-analyse.md` — the PRDs (French). Authority on *how* to build it: architecture, fixed cross-cutting decisions D1–D8, pinned parameters (K=200, N=3, obfuscated lexicon), analytic test oracle, schemas.

@@ -1,6 +1,6 @@
 # PROGRESS.md — Suivi d'avancement
 
-Dernière mise à jour : 2026-08-19. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ bloqué/attention.
+Dernière mise à jour : 2026-08-21. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ bloqué/attention.
 
 ## Phase 0 — Cadrage (✅ terminée le 2026-08-19)
 
@@ -19,13 +19,15 @@ Dernière mise à jour : 2026-08-19. Convention : ✅ fait · 🔄 en cours · �
 - ✅ `prd/03-arbitre-orchestration.md` — boucle de session, 3 flux aléatoires seedés, critère de plateau automatisé, pilote de calibrage, enveloppe de coût 20–50 €
 - ✅ `prd/04-logging-analyse.md` — schémas turns.jsonl/sessions.jsonl, CSV dérivés, Git, détecteur dé-obfuscation/récitation, plan d'analyse
 
-## Phase 2 — Build (⬜ à faire, ordre imposé par les dépendances)
+## Phase 2 — Build (🔄 en cours, ordre imposé par les dépendances)
 
-- ✅ Moteur de jeu + suite de tests oracle (PRD 1) — `src/moteur/`, `tests/test_moteur.py`, **41 tests verts en 3,5 s**, arithmétique exacte en `Fraction`, zéro dépendance
-- ⬜ Harnais mémoire : wrapper hermes -z, gel/restauration, isolation par run, canari d'isolation (PRD 2)
-- ⬜ Logging : writers JSONL, schémas, détecteur mots-clés (PRD 4, en parallèle du harnais)
-- ⬜ Arbitre : boucle session/manche, intégration moteur+harnais+logs (PRD 3)
+- ✅ Moteur de jeu + suite de tests oracle (PRD 1) — `src/moteur/`, `tests/test_moteur.py`, **41 tests**, arithmétique exacte en `Fraction`, zéro dépendance
+- ✅ Harnais mémoire (PRD 2) — `src/harnais/`, `tests/test_harnais.py`, **56 tests**. Gabarits obfusqués + hash des règles, parsing strict/repli/relance/défaut, gel fichiers, stores isolés, canari d'isolation, 3 conditions SM/ICL/AE. **Canari exécuté pour de vrai** le 2026-08-21 (store jetable, modèle gratuit) : écriture confirmée dans le store du run, absente du home global, écriture impossible en configuration de manche.
+- ✅ Logging (PRD 4) — `src/journal/`, `tests/test_journal.py`, **44 tests**. Schémas JSONL validés à l'écriture, détecteur dé-obfuscation/récitation à deux niveaux, CSV dérivés, `rejouer.py` (re-règle chaque manche depuis les seuls logs et retrouve π̂ et l'écart).
+- ⬜ Arbitre : boucle session/manche, intégration moteur+harnais+logs (PRD 3) — **prochaine étape**
 - ⬜ Test de bout en bout : 1 mini-run (1 session, K réduit ~20, bot Station, condition SM) sur le Victus
+
+Total : **141 tests verts en ~4 s**, toujours sans dépendance ni appel API dans la suite.
 
 ## Phase 3 — Pilote de calibrage (⬜)
 
@@ -60,4 +62,5 @@ Dernière mise à jour : 2026-08-19. Convention : ✅ fait · 🔄 en cours · �
 | Date | Fait |
 |---|---|
 | 2026-08-19 | Cadrage complet, audit environnement, oracle analytique, D1–D8, CONTEXT.md, PROGRESS.md, PRD 00–04 rédigés. |
-| 2026-08-19 | **Phase 2, étape 1 : moteur de jeu implémenté et testé** (`src/moteur/`, 41 tests T1–T9 verts). Constante GTO 2/3 confirmée par T2 (la variante 1/3 est bien exploitable). Formules en α de T5/T6 corrigées → PRD 1 v1.1 §7.1. **Prochaine action : PRD 2 (harnais mémoire) et PRD 4 (logging) en parallèle.** |
+| 2026-08-19 | **Phase 2, étape 1 : moteur de jeu implémenté et testé** (`src/moteur/`, 41 tests T1–T9 verts). Constante GTO 2/3 confirmée par T2 (la variante 1/3 est bien exploitable). Formules en α de T5/T6 corrigées → PRD 1 v1.1 §7.1. |
+| 2026-08-21 | **Phase 2, étapes 2 et 3 : harnais mémoire (PRD 2) et logging (PRD 4)** (`src/harnais/`, `src/journal/`, 100 tests de plus, 141 au total). Clés de config Hermes relevées dans son code source et **vérifiées sur machine** ; canari d'isolation réel passé. Trois constats à retenir : `context_engine` est le toolset « zéro outil » utilisable (`memory` en expose exactement un) ; le modèle gratuit hallucine des appels d'outils quand on ne lui en donne aucun (drapeau `sortie_pseudo_outil`) ; l'auto-déclaration d'outils par l'agent n'est pas fiable, le canari vérifie donc un fichier, pas une réponse. **Prochaine action : PRD 3 (arbitre) — c'est le dernier bloc avant le mini-run de bout en bout.** |

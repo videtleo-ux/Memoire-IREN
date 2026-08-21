@@ -1,6 +1,6 @@
 # CONTEXT.md — Contexte vivant du projet
 
-Dernière mise à jour : 2026-08-19. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `spec-build-arene-kuhn(1).md` et `prd/00-vue-densemble.md`.
+Dernière mise à jour : 2026-08-21. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `spec-build-arene-kuhn(1).md` et `prd/00-vue-densemble.md`.
 
 ## 1. Le projet en une phrase
 
@@ -35,6 +35,17 @@ Voir le tableau complet D1–D8 dans `prd/00-vue-densemble.md` §2. Les plus str
 3. **Constante GTO contestée tranchée par le maths + test** : couverture J1-Vael face à une mise = **2/3** à α = 1/3 (la spec §2 dit 1/3, qui correspond au cas α = 0 ; le test `exploitabilité(GTO) = 0` échoue avec 1/3 et passe avec 2/3 — le moteur s'auto-vérifie).
 4. **Lexique obfusqué figé** : « L'Épreuve des Trois Sceaux », Tor ≺ Vael ≺ Rhun, actions *retenir / engager / couvrir / se retirer* (validé par Léo).
 5. **Oracle analytique du moteur** (dérivé à la main, à reproduire exactement par le code) : valeur du jeu −1/18 ; meilleure réponse +1/3/manche vs Station, +1/manche vs Over-folder ; écart d'un réciteur GTO = 1/9 vs Station, 7/9 vs Over-folder. Contre Station/Over-folder, seuls 6 info-sets sont atteignables et il y a exactement 1 décision LLM par manche.
+
+## 4 bis. Constats machine du 2026-08-21 (implémentation du harnais, PRD 2)
+
+Le PRD 2 §3 exigeait d'arrêter les clés de config **contre le code d'Hermes**, pas de les supposer. Fait, puis vérifié par un canari réel sur store jetable (modèle gratuit, deux appels) :
+
+- **Clés relevées dans le code** (`agent/agent_init.py`, `agent/turn_context.py`) : `memory.memory_enabled`, `memory.user_profile_enabled`, `memory.nudge_interval` (0 = plus aucune revue d'auto-amélioration d'arrière-plan), `skills.creation_nudge_interval`. Toutes posées par `harnais.stores.config_arene`.
+- **Toolset « zéro outil » = `context_engine`** : vérifié, `get_tool_definitions(enabled_toolsets=["context_engine"])` rend une liste vide, et `["memory"]` rend exactement `memory`. Ce n'est pas un bricolage : `hermes -z` **refuse** une liste de toolsets vide ou inconnue, il fallait un nom légitime et creux.
+- **`MEMORY.md` = `$HERMES_HOME/memories/MEMORY.md`**, entrées séparées par `"\n§\n"` — le diff d'entrées de la frontière est donc exact, pas heuristique.
+- **`hermes -z --usage-file`** écrit un rapport JSON par appel (tokens entrée/sortie, modèle réellement servi, coût estimé), y compris en cas d'échec : c'est la source des champs `tokens` des logs et du suivi de budget.
+- **⚠️ Piège n°4 — l'agent ne sait pas s'introspecter** : interrogé sur le nombre d'outils dont il dispose alors qu'il n'en a aucun, le modèle gratuit répond « 5 ». Le canari ne vérifie donc plus une *réponse* mais un *fichier* : même consigne d'écriture jouée en configuration de manche, `MEMORY.md` ne doit pas bouger d'un octet.
+- **⚠️ Piège n°5 — pseudo-appels d'outils** : privé d'outils, `tencent/hy3:free` a émis un `<tool_call:…>terminal…` **en clair dans sa réponse** au lieu de répondre. Inerte (aucun outil n'existe), mais la sortie est inexploitable et coûte une relance. Drapeau `sortie_pseudo_outil` posé dans les logs ; à surveiller au pilote de calibrage, où le taux de parsing ≥ 98 % est un critère de véto.
 
 ## 5. Où en est-on / où va-t-on
 

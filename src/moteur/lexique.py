@@ -18,7 +18,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Mapping
+from typing import Mapping, MutableMapping
 
 from .infosets import Action, Carte
 
@@ -127,12 +127,29 @@ _MOTIFS_COMPILES = tuple(
 )
 
 
+#: Textes déclarés par les couches supérieures (gabarits du PRD 2). Le
+#: registre est alimenté à l'import du module qui les définit.
+_TEXTES_ENREGISTRES: MutableMapping[str, str] = {}
+
+
+def enregistrer_textes(textes: Mapping[str, str]) -> None:
+    """Déclare des textes servis à l'agent pour qu'ils entrent dans T8.
+
+    Appelé par `harnais.gabarits` (règles, rubriques, consignes) : le balayage
+    d'obfuscation couvre ainsi les gabarits sans que ce module ait à connaître
+    le harnais — l'inversion de dépendance évite un cycle d'import.
+    """
+    _TEXTES_ENREGISTRES.update(textes)
+
+
 def textes_destines_a_lagent() -> Mapping[str, str]:
     """Tous les textes actuellement servis à l'agent, étiquetés.
 
-    PRD 2 enrichira ce dictionnaire (règles complètes, vue de manche, consigne
-    de format). T8 balaie ce qu'il contient : la couverture du test grandit
-    automatiquement avec le harnais.
+    Contient le vocabulaire de ce module, plus tout ce qu'une couche
+    supérieure a déclaré via `enregistrer_textes` — la couverture de T8
+    grandit donc automatiquement avec le harnais, **à condition** que le
+    module de gabarits ait été importé (`tests/test_harnais.py` s'en charge
+    pour les gabarits du PRD 2).
     """
     textes: dict[str, str] = {
         "nom_du_jeu": NOM_DU_JEU,
@@ -140,6 +157,7 @@ def textes_destines_a_lagent() -> Mapping[str, str]:
     }
     textes.update({f"jeton.{carte.name}": nom for carte, nom in JETONS.items()})
     textes.update({f"action.{action.name}": nom for action, nom in ACTIONS.items()})
+    textes.update(_TEXTES_ENREGISTRES)
     return textes
 
 
@@ -164,6 +182,7 @@ __all__ = [
     "MOTIFS_INTERDITS",
     "NOM_DU_JEU",
     "VERSION_LEXIQUE",
+    "enregistrer_textes",
     "lire_action",
     "lire_carte",
     "rendre_action",
