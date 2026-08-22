@@ -125,6 +125,34 @@ L'audit prévu par `AUDIT.md` a rendu quatre constats majeurs. Les quatre sont c
 
 Vérifié sans trouvaille à l'audit, sur pièces : mesure re-dérivée indépendamment (écart identique à 10 décimales), appariement des donnes (240 coordonnées, 0 divergence), gel depuis `vue_servie`, toolset de manche réellement vide, pas de canal de session caché, pas de bascule de modèle possible. Constat mineur : `memory.flush_min_turns` n'existe pas dans Hermes (clé inerte).
 
+## 4 septies. Run de validation C2 sur Luna (2026-08-22) — pilote fichier prouvé, enveloppe recalculée
+
+**Run réel `ICL-station-r1`, 4 séries de K = 150 sur `openai/gpt-5.6-luna`** (racine `C:\arene-runs-verif-c2`, dossier opaque `run-f1060d1c067d`). Verdict : **600/600 réponses en parsing `ok` strict, zéro défaut, zéro relance, zéro erreur de harnais**, intégrité de clôture OK, rejeu de complétude OK. Le pilote fichier a servi sans incident les fenêtres de 34 739 puis **51 059 caractères** (`vue_servie` mesurée) — au-delà du plafond argv de 32 767 qui condamnait la campagne. La **reprise sur incident a été exercée deux fois en vrai** (kills externes du lanceur, pas de l'arbitre) : 84 tours archivés en `turns.abandonnes.jsonl`, séries rejouées à donnes identiques, fenêtre reconstruite depuis les récaps logués. Écart : 0,201 → 0,076 → 0,060 → 0,045 — escalier descendant, **sous le niveau récité (0,066) dès la série 3**.
+
+**Mesures de coût/latence par série (Station, `medium`), du provider lui-même :**
+
+| série (fenêtre) | coût | s/manche | entrée réelle/appel |
+|---|---|---|---|
+| 0 (vide ≈ SM) | 0,131 $ | 11,3 | 1 645 tokens |
+| 1 (1 récap) | 0,388 $ | 13,4 | 7 176 |
+| 2 (2 récaps) | 0,588 $ | 13,3 | 12 762 |
+| ≥3 (saturée) | **0,821 $** | 14,1 | 18 332 |
+
+Trois causes d'écart avec l'estimation initiale : **(a)** le français tokenise à ~2,8 caractères/token sur Luna (mesuré ; l'estimation `CARACTERES_PAR_TOKEN = 4` sous-compte de ~40 % — la fenêtre « 13 000 tokens estimés » pèse ~18 000 tokens réels, sans impact de validité) ; **(b)** **le cache de Luna n'a jamais lu un token en 600 appels** (contrairement à `hy3`, qui mord) ; **(c)** l'écriture cache est tarifée au catalogue Nous ~0,30 $/M, soit ~3,5× l'entrée — payée à fonds perdus vu (b). Pas de bouton client : la clé `prompt_caching` d'Hermes ne couvre que le protocole Anthropic, l'écriture est côté fournisseur. **À vérifier sur le portail Nous** : la balance doit avoir baissé de ~2,33 $ pour ce run si la prime est réellement facturée (~1,0 $ sinon — auquel cas l'enveloppe ci-dessous est pessimiste).
+
+**Enveloppe de campagne recalculée** (27 runs, K = 150, réflexion AE ≈ +0,01 $/frontière, majoration GTO ≈ +15 % de décisions — hypothèse non mesurée) :
+
+| poste | plateau à 10 séries | plafond 16 séries |
+|---|---|---|
+| SM (9 × 3 séries) | ~3,7 $ | ~3,7 $ |
+| ICL (9 runs) | ~64 $ | ~110 $ |
+| AE (9 runs) | ~15 $ | ~24 $ |
+| **total** | **~83 $** | **~137 $** |
+
+Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL saturées. Leviers, par ordre : la facturation réelle du cache-write (si les writes facturent au tarif d'entrée, ICL retombe à ~30–50 $ et la campagne dans l'enveloppe) ; le plateau (10 vs 16 séries = −46 $ sur ICL) ; en dernier recours `SERIES_MAX`, qui est une décision scientifique, pas budgétaire (PRD 3 §3).
+
+**Durée** : 28 min (série SM) à 35 min (saturée). Séquentiel : ~109 h (plateau à 10) à ~167 h (plafond) — « deux jours » ne tient qu'avec du parallélisme, désormais sans risque (isolation prouvée : canari réel, témoin, dossiers opaques) : 3 runs de front ≈ 36–56 h, 5 de front ≈ 22–33 h, lancements décalés de 30 s (§4 quinquies).
+
 ## 5. Où en est-on / où va-t-on
 
 L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).
