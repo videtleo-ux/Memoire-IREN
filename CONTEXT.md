@@ -149,7 +149,7 @@ Trois causes d'écart avec l'estimation initiale : **(a)** le français tokenise
 | AE (9 runs) | ~15 $ | ~24 $ |
 | **total** | **~83 $** | **~137 $** |
 
-Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL saturées. Leviers, par ordre : la facturation réelle du cache-write (si les writes facturent au tarif d'entrée, ICL retombe à ~30–50 $ et la campagne dans l'enveloppe) ; le plateau (10 vs 16 séries = −46 $ sur ICL) ; en dernier recours `SERIES_MAX`, qui est une décision scientifique, pas budgétaire (PRD 3 §3).
+Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL saturées. **Facturation confirmée sur le portail le 2026-08-22 : balance −2,33 $ pour le run de validation** — la prime cache-write est réelle, l'enveloppe ci-dessus fait foi. Aucun opt-out côté client (vérifié dans Hermes : la clé `prompt_caching` ne couvre que le protocole Anthropic, et il n'existe pas de profil fournisseur « nous » exposant un champ de requête pour désactiver le cache). Leviers restants, par ordre : le plateau (10 vs 16 séries = −46 $ sur ICL — et la courbe de validation, déjà à 0,045 en série 3, plaide pour un plateau précoce) ; demander à Nous si un opt-out cache-write existe (~−60 % sur ICL) ; en dernier recours `SERIES_MAX`, qui est une décision scientifique, pas budgétaire (PRD 3 §3).
 
 **Durée** : 28 min (série SM) à 35 min (saturée). Séquentiel : ~109 h (plateau à 10) à ~167 h (plafond) — « deux jours » ne tient qu'avec du parallélisme, désormais sans risque (isolation prouvée : canari réel, témoin, dossiers opaques) : 3 runs de front ≈ 36–56 h, 5 de front ≈ 22–33 h, lancements décalés de 30 s (§4 quinquies).
 
