@@ -47,7 +47,12 @@ $Racine   = "C:\arene-runs"
 $HomeSrc  = "C:\Users\videt\AppData\Local\hermes"
 $Modele   = "openai/gpt-5.6-luna"
 $K        = 150
-$Front    = 5
+# 3 et non 5 : a cinq exécutions de front, le compte Nous Portal a heurte sa
+# limite de debit apres ~1 h 50 (« rate limit active — resets in 7m 39s »), ce
+# qui a arrete cinq runs d'un coup le 2026-08-22. Le harnais sait desormais
+# patienter le temps annonce (harnais.hermes.delai_rate_limit), mais mieux vaut
+# ne pas provoquer la limite : trois runs tiennent ~14 appels/minute.
+$Front    = 3
 $Decalage = 30
 
 $env:PYTHONPATH = Join-Path $Depot "src"

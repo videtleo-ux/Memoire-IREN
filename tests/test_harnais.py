@@ -8,6 +8,7 @@ l'obfuscation des textes servis.
 
 from __future__ import annotations
 
+import json
 from itertools import permutations, product
 from pathlib import Path
 
@@ -184,6 +185,80 @@ def test_h_pilote_oneshot_fige():
     assert "import hermes_cli" not in source.replace(
         "from hermes_cli.main import", ""
     ), "un seul import d'Hermes, celui du point d'entrée"
+
+
+def test_h_delai_rate_limit_lu_dans_le_message():
+    """Une limite de débit annonce son reset : on lit le délai plutôt que de
+    renoncer. Constaté en campagne le 2026-08-22 — cinq runs de plusieurs
+    heures arrêtés par une indisponibilité de sept minutes."""
+    from harnais.hermes import ATTENTE_MAX_RATE_LIMIT, MARGE_RATE_LIMIT, delai_rate_limit
+
+    reel = "⏳ Nous Portal rate limit active — resets in 7m 39s.\n\nNo fallback provider available."
+    assert delai_rate_limit(reel) == 7 * 60 + 39 + MARGE_RATE_LIMIT
+    assert delai_rate_limit("rate limit active - resets in 45s") == 45 + MARGE_RATE_LIMIT
+    assert delai_rate_limit("rate limit active — resets in 3m") == 180 + MARGE_RATE_LIMIT
+    # Un délai aberrant est plafonné : on ne fige pas un run sans le dire.
+    assert delai_rate_limit("rate limit active — resets in 600m") == ATTENTE_MAX_RATE_LIMIT
+    # Ce qui n'est pas une limite de débit ne doit pas déclencher d'attente.
+    assert delai_rate_limit("API call failed after 3 retries: HTTP 404") is None
+    assert delai_rate_limit("Mon sceau Rhun domine.\nACTION: engager") is None
+
+
+def test_h_attente_sur_rate_limit_ne_consomme_pas_les_tentatives(tmp_path, monkeypatch):
+    """Le harnais patiente et rejoue la tentative, au lieu d'épuiser ses
+    relances en quelques secondes puis de faire tomber le run."""
+    import subprocess
+
+    from harnais.hermes import InvocateurHermes
+
+    store = creer_store(tmp_path / "store")
+    dormi: list[float] = []
+    monkeypatch.setattr("harnais.hermes.time.sleep", lambda s: dormi.append(s))
+
+    appels = {"n": 0}
+
+    def faux_run(commande, **kw):
+        appels["n"] += 1
+        # Deux limites de débit, puis une vraie réponse.
+        texte = (
+            "rate limit active — resets in 2m 0s"
+            if appels["n"] <= 2
+            else "ACTION: engager"
+        )
+        Path(commande[6]).write_text(
+            json.dumps({"failed": appels["n"] <= 2, "completed": appels["n"] > 2}),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(commande, 0, texte, "")
+
+    monkeypatch.setattr(subprocess, "run", faux_run)
+    reponse = InvocateurHermes(store, executable=_faux_venv_hermes(tmp_path))("prompt")
+
+    assert reponse.ok, "la reponse d'apres l'attente doit etre rendue normalement"
+    assert appels["n"] == 3, "les deux attentes ne consomment pas les relances"
+    assert dormi == [130, 130], "on attend le delai annonce, plus une marge"
+
+
+def test_h_attentes_bornees_pour_ne_pas_figer_un_run(tmp_path, monkeypatch):
+    """Trois resets d'affilee signalent une campagne trop parallele : le
+    harnais rend la main plutot que d'attendre indefiniment."""
+    import subprocess
+
+    from harnais.hermes import ATTENTES_MAX, InvocateurHermes
+
+    store = creer_store(tmp_path / "store")
+    dormi: list[float] = []
+    monkeypatch.setattr("harnais.hermes.time.sleep", lambda s: dormi.append(s))
+
+    def toujours_limite(commande, **kw):
+        Path(commande[6]).write_text(json.dumps({"failed": True}), encoding="utf-8")
+        return subprocess.CompletedProcess(commande, 0, "rate limit active — resets in 1m", "")
+
+    monkeypatch.setattr(subprocess, "run", toujours_limite)
+    reponse = InvocateurHermes(store, executable=_faux_venv_hermes(tmp_path))("prompt")
+
+    assert not reponse.ok, "l'echec doit finir par remonter a l'arbitre"
+    assert len(dormi) == ATTENTES_MAX, "les attentes sont bornees"
 
 
 def test_h_python_du_venv_introuvable_echoue_avant_lappel(tmp_path):

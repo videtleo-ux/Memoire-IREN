@@ -89,7 +89,43 @@ _MOTIFS_ECHEC_FOURNISSEUR = (
     re.compile(r"^\s*Model generated invalid tool call", re.IGNORECASE),
     re.compile(r"^\s*Incomplete REASONING_SCRATCHPAD", re.IGNORECASE),
     re.compile(r"^\s*Codex response remained incomplete", re.IGNORECASE),
+    # Limite de débit du compte, annoncée avec un délai de reset (campagne du
+    # 2026-08-22) : « ⏳ Nous Portal rate limit active — resets in 7m 39s. »
+    re.compile(r"rate limit active", re.IGNORECASE),
 )
+
+#: Limite de débit **du compte**, distincte d'un échec définitif : Hermes
+#: annonce le délai de reset. Rencontrée en campagne avec cinq exécutions en
+#: parallèle — elle a arrêté cinq runs de plusieurs heures pour une
+#: indisponibilité de sept minutes. Une limite de débit n'est pas une panne :
+#: c'est une file d'attente, et le harnais doit patienter, pas renoncer.
+_MOTIF_DELAI_RATE_LIMIT = re.compile(
+    r"rate limit active.{0,40}?resets? in\s*(?:(\d+)\s*m)?\s*(?:(\d+)\s*s)?",
+    re.IGNORECASE | re.DOTALL,
+)
+
+#: Plafond d'une attente : au-delà, ce n'est plus une limite de débit passagère
+#: et il vaut mieux rendre la main que d'immobiliser un run sans le dire.
+ATTENTE_MAX_RATE_LIMIT = 900
+
+#: Marge ajoutée au délai annoncé — repartir à la seconde près retomberait sur
+#: la même limite.
+MARGE_RATE_LIMIT = 10
+
+#: Nombre d'attentes par invocation. Bornées : trois resets consécutifs
+#: signalent une campagne trop parallèle, un fait qui doit remonter.
+ATTENTES_MAX = 3
+
+
+def delai_rate_limit(texte: str) -> int | None:
+    """Secondes à attendre avant de réessayer, si la sortie est une limite de
+    débit annonçant son reset. `None` si ce n'en est pas une."""
+    correspondance = _MOTIF_DELAI_RATE_LIMIT.search(texte or "")
+    if correspondance is None:
+        return None
+    minutes = int(correspondance.group(1) or 0)
+    secondes = int(correspondance.group(2) or 0)
+    return min(minutes * 60 + secondes + MARGE_RATE_LIMIT, ATTENTE_MAX_RATE_LIMIT)
 
 
 def echec_fournisseur(texte: str) -> str | None:
@@ -255,8 +291,11 @@ class InvocateurHermes:
         env = _environnement(self.store)
         travail = repertoire_neutre(self.store)
         derniere: Reponse | None = None
+        attentes = 0
 
-        for tentative in range(1, self.relances + 2):
+        tentative = 0
+        while tentative < self.relances + 1:
+            tentative += 1
             with tempfile.TemporaryDirectory(prefix="arene-usage-") as tmp:
                 rapport = Path(tmp) / "usage.json"
                 # Le prompt part par fichier, jamais en argv (C2) — et jamais
@@ -276,6 +315,19 @@ class InvocateurHermes:
             if reponse.ok:
                 return reponse
             derniere = reponse
+
+            # Limite de débit du compte : ce n'est pas une panne, c'est une
+            # file d'attente. On patiente le temps annoncé et on rejoue la
+            # tentative **sans la consommer** — sinon un reset de sept minutes
+            # emporte un run de plusieurs heures (constaté en campagne le
+            # 2026-08-22 : cinq runs arrêtés d'un coup). Les attentes sont
+            # bornées : au-delà, la campagne est trop parallèle, et c'est un
+            # fait qui doit remonter plutôt que d'être absorbé en silence.
+            attente = delai_rate_limit(reponse.texte)
+            if attente is not None and attentes < ATTENTES_MAX:
+                attentes += 1
+                time.sleep(attente)
+                tentative -= 1
 
         assert derniere is not None  # la boucle tourne au moins une fois
         return derniere
@@ -410,9 +462,12 @@ def _usage(rapport: Path) -> Mapping[str, object]:
 
 
 __all__ = [
+    "ATTENTES_MAX",
+    "ATTENTE_MAX_RATE_LIMIT",
     "RELANCES_DEFAUT",
     "TIMEOUT_DEFAUT",
     "Invocateur",
     "InvocateurHermes",
     "Reponse",
+    "delai_rate_limit",
 ]
