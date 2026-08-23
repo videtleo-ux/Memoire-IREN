@@ -40,6 +40,7 @@ from harnais import (
     InvocateurHermes,
     ParametresModele,
     Store,
+    auth_partagee_defaut,
     construire_harnais,
     creer_store,
 )
@@ -584,9 +585,18 @@ def preparer_run(
     neuf = not config.dossier_store.exists() or not any(config.dossier_store.iterdir())
 
     if neuf:
-        store = creer_store(config.dossier_store, config.parametres, home_source)
+        store = creer_store(
+            config.dossier_store,
+            config.parametres,
+            home_source,
+            auth_partagee=auth_partagee_defaut(config.racine),
+        )
     else:
-        store = Store(chemin=config.dossier_store, parametres=config.parametres)
+        store = Store(
+            chemin=config.dossier_store,
+            parametres=config.parametres,
+            auth_partagee=auth_partagee_defaut(config.racine),
+        )
         store.ecrire_config()  # configuration de manche : mémoire native éteinte
 
     if invocateur is None:

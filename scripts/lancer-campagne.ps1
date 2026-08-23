@@ -37,6 +37,15 @@
 # `hermes auth status nous` (doit dire « logged in »), a reparer par
 # `hermes portal login`.
 
+param(
+    # Une tranche = les conditions et les adversaires a jouer. Par defaut la
+    # premiere tranche (SM + AE, les trois adversaires). La tranche ICL se
+    # lance ainsi, restreinte a deux adversaires (chapitre de methode §2.2.7) :
+    #   -Conditions ICL -Bots Station,Over-folder
+    [string[]] $Conditions = @("AE", "SM"),
+    [string[]] $Bots       = @("Station", "Over-folder", "GTO")
+)
+
 $ErrorActionPreference = "Stop"
 
 # Depuis scripts/ — evite d'ecrire en dur un chemin qui contient des accents,
@@ -71,9 +80,9 @@ function Ecrire($texte) {
 # Bots entrelaces par replication : si la tranche doit s'arreter en route, ce
 # sont des replications entieres qui sont acquises, pas des moities.
 $File = @()
-foreach ($condition in @("AE", "SM")) {
+foreach ($condition in $Conditions) {
     foreach ($replication in 1..3) {
-        foreach ($bot in @("Station", "Over-folder", "GTO")) {
+        foreach ($bot in $Bots) {
             $File += [pscustomobject]@{
                 Condition = $condition; Bot = $bot; Replication = $replication
             }
@@ -81,7 +90,8 @@ foreach ($condition in @("AE", "SM")) {
     }
 }
 
-Ecrire ("tranche SM+AE : {0} runs, K={1}, modele {2}, {3} de front" -f $File.Count, $K, $Modele, $Front)
+Ecrire ("tranche {0} : {1} runs ({2}), K={3}, modele {4}, {5} de front" -f `
+    ($Conditions -join "+"), $File.Count, ($Bots -join "/"), $K, $Modele, $Front)
 
 $enCours = @()
 $suivant = 0

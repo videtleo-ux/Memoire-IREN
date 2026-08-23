@@ -205,12 +205,29 @@ def config_arene(
 FICHIERS_AUTH = ("auth.json",)
 
 
+#: Nom du magasin de jetons OAuth **commun à tous les runs**, sous la racine.
+DOSSIER_AUTH_PARTAGEE = "auth-partagee"
+
+
+def auth_partagee_defaut(racine: Path | str) -> Path:
+    """Magasin de jetons partagé par les runs d'une racine."""
+    return Path(racine) / DOSSIER_AUTH_PARTAGEE
+
+
 @dataclass(frozen=True)
 class Store:
-    """Un `HERMES_HOME` dédié à un run."""
+    """Un `HERMES_HOME` dédié à un run.
+
+    L'isolation porte sur la **mémoire**, pas sur l'authentification. Ces deux
+    choses vivent par défaut au même endroit chez Hermes, et les confondre
+    casse la campagne — cf. `variables_env`.
+    """
 
     chemin: Path
     parametres: ParametresModele = field(default_factory=ParametresModele)
+    #: Répertoire du magasin de jetons Nous partagé (`HERMES_SHARED_AUTH_DIR`).
+    #: `None` = comportement natif d'Hermes, à réserver aux tests.
+    auth_partagee: Path | None = None
 
     @property
     def notes(self) -> Path:
@@ -230,7 +247,30 @@ class Store:
         self.config.write_text(contenu + "\n", encoding="utf-8")
 
     def variables_env(self) -> Mapping[str, str]:
-        return {"HERMES_HOME": str(self.chemin)}
+        """Env du sous-processus : le store isolé, et le magasin de jetons commun.
+
+        ⚠️ `HERMES_SHARED_AUTH_DIR` n'est pas un réglage de confort. Les jetons
+        de rafraîchissement de Nous Portal sont **à usage unique** : chaque
+        emploi en émet un nouveau et invalide le précédent. Or `creer_store`
+        clone `auth.json` dans chaque run, et Hermes place son magasin de
+        jetons partagé sous `HERMES_HOME` — donc chaque run avait le sien.
+        Passé l'heure de validité du jeton d'accès, les runs rafraîchissaient
+        tous avec **la même copie** du jeton de rafraîchissement, le portail y
+        voyait une réutilisation, et il **révoquait la session entière** :
+        « Nous Portal detected refresh-token reuse and revoked this session »
+        (constaté le 2026-08-23, après la campagne SM+AE).
+
+        Hermes prévoit exactement ce cas — le magasin partagé porte son propre
+        verrou pour que des profils frères ne courent pas sur un jeton à usage
+        unique. Il suffit de le désigner hors du store. L'isolation mémoire
+        n'en est pas affectée : `memories/` reste sous `HERMES_HOME`, et le
+        canari comme le témoin continuent de la prouver.
+        """
+        env = {"HERMES_HOME": str(self.chemin)}
+        if self.auth_partagee is not None:
+            Path(self.auth_partagee).mkdir(parents=True, exist_ok=True)
+            env["HERMES_SHARED_AUTH_DIR"] = str(self.auth_partagee)
+        return env
 
 
 def creer_store(
@@ -238,6 +278,7 @@ def creer_store(
     parametres: ParametresModele = ParametresModele(),
     home_source: Path | str | None = None,
     notes_initiales: str = "",
+    auth_partagee: Path | str | None = None,
 ) -> Store:
     """Crée le store isolé d'un run (`M_0` vide par défaut).
 
@@ -250,7 +291,11 @@ def creer_store(
         raise ValueError(f"store déjà peuplé, un run part toujours d'un store neuf : {chemin}")
     dossier_memoire(chemin).mkdir(parents=True, exist_ok=True)
 
-    store = Store(chemin=chemin, parametres=parametres)
+    store = Store(
+        chemin=chemin,
+        parametres=parametres,
+        auth_partagee=Path(auth_partagee) if auth_partagee is not None else None,
+    )
     store.ecrire_config()
     store.notes.write_text(notes_initiales, encoding="utf-8")
 
@@ -318,6 +363,7 @@ def _fichiers_memoire(home: Path) -> Sequence[Path]:
 
 __all__ = [
     "BASE_URL_DEFAUT",
+    "DOSSIER_AUTH_PARTAGEE",
     "FICHIERS_AUTH",
     "FOURNISSEUR_DEFAUT",
     "LIMITE_NOTES",
@@ -327,6 +373,7 @@ __all__ = [
     "EchecCanari",
     "ParametresModele",
     "Store",
+    "auth_partagee_defaut",
     "config_arene",
     "creer_store",
     "marqueur_canari",

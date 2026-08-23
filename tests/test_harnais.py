@@ -187,6 +187,62 @@ def test_h_pilote_oneshot_fige():
     ), "un seul import d'Hermes, celui du point d'entrée"
 
 
+def test_h_magasin_de_jetons_partage_entre_les_runs(tmp_path, monkeypatch):
+    """Les jetons de rafraîchissement de Nous sont à usage unique : si chaque
+    run garde son propre magasin, ils rafraîchissent tous avec la même copie
+    et le portail révoque la session entière (constaté le 2026-08-23). Hermes
+    prévoit `HERMES_SHARED_AUTH_DIR`, avec verrou, exactement pour ça.
+
+    L'isolation qui compte reste celle de la mémoire, et elle n'y touche pas :
+    `HERMES_HOME` demeure propre à chaque run."""
+    import subprocess
+
+    from harnais.hermes import InvocateurHermes
+    from harnais.stores import auth_partagee_defaut, creer_store
+
+    racine = tmp_path / "runs"
+    partage = auth_partagee_defaut(racine)
+    stores = [
+        creer_store(racine / f"run-{i}" / "hermes-home", auth_partagee=partage)
+        for i in (1, 2)
+    ]
+
+    envs = []
+
+    def faux_run(commande, **kw):
+        envs.append(kw["env"])
+        raise OSError("stop")
+
+    monkeypatch.setattr(subprocess, "run", faux_run)
+    hermes = _faux_venv_hermes(tmp_path)
+    for store in stores:
+        # relances=0 : une tentative par store, sinon `envs` collecte les
+        # relances du premier avant d'atteindre le second.
+        InvocateurHermes(store, executable=hermes, relances=0)("prompt")
+
+    assert envs[0]["HERMES_SHARED_AUTH_DIR"] == envs[1]["HERMES_SHARED_AUTH_DIR"], (
+        "deux runs doivent partager le magasin de jetons, sinon ils se "
+        "revoquent mutuellement la session"
+    )
+    assert envs[0]["HERMES_HOME"] != envs[1]["HERMES_HOME"], (
+        "la memoire, elle, reste isolee par run"
+    )
+    assert partage.is_dir(), "le magasin partage doit exister avant l'appel"
+    assert partage not in stores[0].chemin.parents, (
+        "le magasin partage ne doit pas vivre sous un store : il serait de "
+        "nouveau propre a un seul run"
+    )
+
+
+def test_h_store_sans_magasin_partage_nexporte_pas_la_variable(tmp_path):
+    """Sans magasin désigné, on laisse Hermes à son comportement natif plutôt
+    que d'inventer un chemin — c'est le cas des tests et des stores jetables."""
+    from harnais.stores import creer_store
+
+    store = creer_store(tmp_path / "store")
+    assert "HERMES_SHARED_AUTH_DIR" not in store.variables_env()
+
+
 def test_h_delai_rate_limit_lu_dans_le_message():
     """Une limite de débit annonce son reset : on lit le délai plutôt que de
     renoncer. Constaté en campagne le 2026-08-22 — cinq runs de plusieurs
