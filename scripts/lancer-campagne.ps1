@@ -42,9 +42,19 @@ param(
     # premiere tranche (SM + AE, les trois adversaires). La tranche ICL se
     # lance ainsi, restreinte a deux adversaires (chapitre de methode §2.2.7) :
     #   -Conditions ICL -Bots Station,Over-folder
-    [string[]] $Conditions = @("AE", "SM"),
-    [string[]] $Bots       = @("Station", "Over-folder", "GTO")
+    #
+    # Listes passees en UNE chaine separee par des virgules, et decoupees ici :
+    # `powershell -File` transmet chaque argument comme une chaine litterale et
+    # ne sait pas construire un [string[]] — `-Bots Station,Over-folder` y
+    # arriverait comme un unique adversaire nomme « Station,Over-folder ».
+    # Decouper nous-memes rend le lancement independant de la facon dont
+    # l'appelant a ete invoque (-File, -Command, ou un raccourci).
+    [string] $Conditions = "AE,SM",
+    [string] $Bots       = "Station,Over-folder,GTO"
 )
+
+$ListeConditions = $Conditions -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+$ListeBots       = $Bots       -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
 
 $ErrorActionPreference = "Stop"
 
@@ -80,9 +90,9 @@ function Ecrire($texte) {
 # Bots entrelaces par replication : si la tranche doit s'arreter en route, ce
 # sont des replications entieres qui sont acquises, pas des moities.
 $File = @()
-foreach ($condition in $Conditions) {
+foreach ($condition in $ListeConditions) {
     foreach ($replication in 1..3) {
-        foreach ($bot in $Bots) {
+        foreach ($bot in $ListeBots) {
             $File += [pscustomobject]@{
                 Condition = $condition; Bot = $bot; Replication = $replication
             }
@@ -91,7 +101,7 @@ foreach ($condition in $Conditions) {
 }
 
 Ecrire ("tranche {0} : {1} runs ({2}), K={3}, modele {4}, {5} de front" -f `
-    ($Conditions -join "+"), $File.Count, ($Bots -join "/"), $K, $Modele, $Front)
+    ($ListeConditions -join "+"), $File.Count, ($ListeBots -join "/"), $K, $Modele, $Front)
 
 $enCours = @()
 $suivant = 0
