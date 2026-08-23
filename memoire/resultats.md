@@ -86,12 +86,13 @@ même calcul. Contre GTO il n'y a rien à exploiter — la mémoire n'y sert qu'
 de commettre des erreurs, et l'écart baisse sans jamais se stabiliser à zéro,
 contrairement aux deux adversaires exploitables.
 
-> **Conséquence pour le chapitre de méthode.** La §2.2.2 écrit qu'une décroissance
-> contre GTO « ne pourrait signaler qu'un défaut de mesure, et invaliderait les
-> résultats obtenus contre les deux autres ». Pris au mot, ce critère invalide la
-> campagne alors que rien n'est cassé. Le contrôle négatif correct est : *la
-> référence récitée ne devient jamais positive contre GTO, et l'écart n'y devient
-> jamais négatif*. Les deux tiennent. La formulation est à corriger.
+> **Le chapitre de méthode a été corrigé sur ce point.** Sa formulation initiale
+> tenait toute décroissance de l'écart contre GTO pour un défaut de mesure
+> invalidant la campagne — critère qui, pris au mot, invalidait des résultats
+> pourtant sains. Le contrôle négatif est désormais énoncé sur l'instrument qui le
+> teste réellement : *la référence récitée ne devient jamais positive contre GTO, et
+> l'écart n'y devient jamais négatif* (§2.2.2 et §2.4 du chapitre). Les deux
+> tiennent sur les trente séries jouées.
 
 ### 2.4 Le canal mémoire
 
@@ -219,10 +220,8 @@ identique, la campagne rejoue les mêmes cartes, manche pour manche.
 
 ## 8. Suite
 
-1. **Corriger la formulation du contrôle négatif** au chapitre de méthode (§2.3
-   ci-dessus).
-2. **Jouer la tranche ICL** — 9 exécutions, ~62 $ aux prix mesurés, seule voie vers
+1. **Jouer la tranche ICL** — 9 exécutions, ~62 $ aux prix mesurés, seule voie vers
    H3.
-3. **H4** — le taux d'incohérence raisonnement↔action reste à coder sur
+2. **H4** — le taux d'incohérence raisonnement↔action reste à coder sur
    `decisions.csv` (la colonne `sortie_brute` porte le texte nécessaire), et
    l'inversion des rôles relevée en §2.4 en est un premier cas documenté.

@@ -37,7 +37,7 @@ C'est l'hypothèse principale, et le reste du protocole n'existe que pour rendre
 **H2 — L'adaptation est exploitative, non récitée.**
 L'adaptation observée consiste à s'écarter de l'équilibre dans la direction que commande l'adversaire rencontré : cesser de bluffer contre un adversaire qui paie systématiquement, engager toutes les mains contre un adversaire qui se couche.
 *Mesure* : signe et amplitude de la **référence récitée**, par adversaire. Un récitant y reste à zéro par construction.
-*Réfutation* : l'écart ne descend que contre l'un des deux adversaires biaisés ; ou il descend contre l'adversaire jouant l'équilibre, ce qui signalerait un artefact de mesure et non une adaptation.
+*Réfutation* : l'écart ne descend que contre l'un des deux adversaires biaisés ; ou la référence récitée devient positive contre l'adversaire jouant l'équilibre, ce qui signalerait un artefact de mesure et non une adaptation.
 
 L'asymétrie des deux adversaires biaisés est le cœur du test : leurs fuites sont opposées, et **aucune stratégie fixe, fût-elle celle de l'équilibre, ne peut faire descendre les deux courbes simultanément**.
 
@@ -87,7 +87,9 @@ L'agent affronte trois politiques fixes, connues de l'expérimentateur et jamais
 
 Ce triplet n'est pas un échantillon d'adversaires : c'est un **plan de test**.
 
-**GTO est le contrôle négatif.** Il n'est par construction pas exploitable : l'écart mesuré contre lui ne peut pas descendre en dessous de zéro, quelle que soit la mémoire de l'agent. Si une décroissance y était observée, elle ne pourrait signaler qu'un défaut de mesure, et invaliderait les résultats obtenus contre les deux autres.
+**GTO est le contrôle négatif**, et c'est la **référence récitée** qui le teste. Contre un adversaire jouant l'équilibre, aucune politique ne rapporte davantage que l'équilibre lui-même : cette mesure ne peut donc pas y devenir positive. Une valeur positive contre GTO — ou un écart négatif, qui est un maximum diminué d'une valeur — signalerait un défaut de l'instrument et invaliderait les résultats obtenus contre les deux autres adversaires.
+
+L'écart, en revanche, **peut légitimement décroître contre GTO**, et il importe de ne pas y voir un artefact. Il mesure la distance à la meilleure réponse : un agent qui cesse de commettre des fautes grossières s'en rapproche sans exploiter quoi que ce soit, puisque l'ensemble des meilleures réponses à l'équilibre rapporte exactement la valeur du jeu. C'est précisément la distinction que le triplet d'adversaires permet d'établir — contre GTO, une mémoire ne peut que corriger des erreurs propres ; contre Station et Over-folder, elle peut en outre punir une faille. Le contrôle qui tranche entre les deux lectures est la condition sans mémoire : si une telle décroissance venait de l'instrument, elle s'y observerait également, sur les mêmes distributions et le même calcul.
 
 **Station et Over-folder sont le discriminateur.** Leurs fuites sont exactement opposées — sur-paiement contre sur-abandon — et leurs exploitations demandent des ajustements de sens contraire. C'est le test décisif de H2 : un agent qui appliquerait une fréquence de bluff constante, y compris celle de l'équilibre, perd dans les deux directions. La littérature note que les LLM tendent à retomber sur des heuristiques déterministes ou sur des constantes apprises ; ce plan rend ce comportement immédiatement visible.
 
@@ -263,7 +265,7 @@ La validité interne repose sur le contrôle de l'environnement de choix et sur 
 | Dérive du matériel entre traitements | modèle, paramètres d'inférence et énoncé des règles figés et enregistrés à chaque appel |
 | Perte de données en cours de campagne | journaux en ajout seul ; reprise à la frontière de série ; série interrompue rejouée intégralement, tentative avortée conservée à part |
 
-Le contrôle négatif que constitue l'adversaire jouant l'équilibre mérite d'être souligné : il fournit une **falsification interne** du dispositif de mesure lui-même. Toute décroissance de l'écart observée contre un adversaire inexploitable invaliderait l'ensemble des mesures de la campagne.
+Le contrôle négatif que constitue l'adversaire jouant l'équilibre mérite d'être souligné : il fournit une **falsification interne** du dispositif de mesure lui-même. Deux observations l'activeraient et invalideraient l'ensemble des mesures de la campagne : une **référence récitée positive** contre lui — un agent qui gagnerait plus que l'équilibre face à l'équilibre — ou un **écart négatif**. La décroissance de l'écart contre GTO, elle, est admissible et attendue : elle traduit la disparition d'erreurs propres et non une exploitation, et s'en distingue par le fait qu'elle ne s'accompagne d'aucun gain au-delà de la valeur du jeu (§2.2.2).
 
 #### Trois canaux de contamination, et la procédure qui les a trouvés
 
