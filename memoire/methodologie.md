@@ -107,7 +107,7 @@ Le modèle de langage est tenu constant, ainsi que ses paramètres d'inférence,
 
 **SM** n'est pas un simple témoin technique. Puisque le modèle a rencontré ce jeu et sa solution durant son pré-entraînement, la condition sans mémoire mesure empiriquement **le niveau de jeu récité** — ce que le modèle produit à partir de sa seule mémorisation, sans aucune expérience de cet adversaire-ci. C'est la ligne de base contre laquelle H1 se juge, et elle est observée, non postulée.
 
-**ICL** représente la solution naïve. La fenêtre est bornée à 13 000 tokens — trois séries entières — et l'éviction se fait par **séries complètes**, jamais en tronquant une série : le profil d'oubli attendu doit provenir de la disparition des séries anciennes, non d'un artefact de découpe. Le dimensionnement de cette fenêtre est justifié en §2.2.6 ; il conditionne la portée de H3.
+**ICL** représente la solution naïve. La fenêtre est bornée à 52 000 caractères — trois séries entières — et l'éviction se fait par **séries complètes**, jamais en tronquant une série : le profil d'oubli attendu doit provenir de la disparition des séries anciennes, non d'un artefact de découpe. Le dimensionnement de cette fenêtre est justifié en §2.2.6 ; il conditionne la portée de H3.
 
 **AE** est le traitement d'intérêt. Deux propriétés en font l'objet même de l'observation :
 
@@ -171,7 +171,7 @@ Cet axe autorise un résultat que le dispositif seul de la performance ne pourra
 
 ### 2.2.6 Plan de campagne et contrôle de l'aléa
 
-**La matrice.** 3 traitements × 3 adversaires × 3 réplications = **27 exécutions**. Chaque réplication reçoit sa propre séquence de distributions ; elles capturent la variabilité conjointe de la distribution des cartes et de la stochasticité du modèle.
+**La matrice.** 3 traitements × 3 adversaires × 3 réplications = **27 exécutions** dans le plan nominal ; **24 dans le plan effectif**, la condition ICL étant restreinte à deux adversaires pour la raison exposée en §2.2.7. Chaque réplication reçoit sa propre séquence de distributions ; elles capturent la variabilité conjointe de la distribution des cartes et de la stochasticité du modèle.
 
 **L'appariement.** Les trois traitements d'une même réplication reçoivent des distributions **strictement identiques**, manche par manche — technique des nombres aléatoires communs. Les tirages de l'adversaire stochastique sont eux aussi appariés. Le design est donc **intra-sujet à environnement commun** : les comparaisons entre traitements se font à cartes égales, ce qui élimine la variance due à la distribution et rend possible une comparaison appariée sur trois réplications malgré la faiblesse de l'effectif. C'est un contrôle plus fort que l'assignation aléatoire aux traitements, puisqu'il annule la source de variance principale au lieu de l'équilibrer en espérance.
 
@@ -209,7 +209,38 @@ Le pilote a été conduit en sept exécutions réelles, couvrant les trois trait
 
 L'effort de raisonnement a fait l'objet d'un test dédié, deux séries de 200 manches jouées **sur les mêmes distributions** : `low` et `medium` produisent le même volume de sortie (445 contre 427 tokens), la même latence et le même coût. `medium` est retenu, puisqu'il ne coûte rien de plus et qu'il retire par avance l'objection d'un modèle bridé pour des raisons budgétaires.
 
-### 2.2.7 Plan d'analyse
+### 2.2.7 Dimensionnement de la tranche ICL
+
+La première tranche — dix-huit exécutions, conditions SM et AE — a coûté 13,01 $. La tranche ICL en coûterait, aux prix mesurés, 62 $ si le plateau survient à dix séries et 106 $ si toutes les exécutions vont au plafond : un facteur cinq à huit, entièrement imputable aux séries à fenêtre pleine, où le prompt servi atteint 51 000 caractères. La question d'une réduction se pose donc, et elle est tranchée ici, *avant* la tranche et sur des critères énoncés — faute de quoi le budget déciderait en silence.
+
+**Le seuil de détectabilité, estimé sur les données déjà acquises.** Le plan étant apparié, la quantité qui gouverne la précision n'est pas la dispersion des niveaux mais celle des **différences par réplication**. Mesurée sur les dix-huit exécutions de la première tranche, elle vaut `σ = 0,0153` jeton/manche, et elle est homogène d'une cellule à l'autre (0,011 à 0,020). La différence minimale détectable au seuil de 95 % en découle :
+
+| Réplications | *t* (95 %) | Effet minimal distinguable de zéro |
+|---|---|---|
+| 2 | 12,706 | **0,138** |
+| **3** | 4,303 | **0,038** |
+| 4 | 3,182 | 0,024 |
+| 6 | 2,571 | 0,016 |
+
+Le passage de trois à deux réplications ne coûte pas un tiers de précision : il en coûte **3,6 fois**, parce qu'un unique degré de liberté fait bondir le *t* de Student de 4,3 à 12,7. La falaise du plan expérimental tombe exactement là.
+
+**L'effet que H3 doit détecter.** Il s'estime sur l'exécution ICL déjà conduite à K = 150, confrontée à son homologue AE sur les mêmes distributions : la différence ICL − AE vaut +0,076, +0,060 puis +0,045 aux séries 1 à 3. **L'effet attendu, de l'ordre de 0,045, dépasse à peine la différence détectable à trois réplications, et se situe six fois en dessous de celle à deux.** À deux réplications, l'expérience ne serait pas moins précise : elle serait *non concluante*, c'est-à-dire une dépense sans résultat — l'issue la plus coûteuse de toutes. Trois réplications constituent donc un plancher, non un confort.
+
+**Trois leviers écartés.** Le nombre de **réplications**, pour la raison ci-dessus. Le nombre de **séries** : la fenêtre contient trois séries, l'éviction ne commence donc qu'à la quatrième, et l'exécution disponible s'arrête précisément avant — le décrochage que H3 prédit lorsque la fenêtre sature n'a jamais été observé, et raccourcir les séries reviendrait à interrompre l'expérience avant l'événement qu'elle cherche. Le nombre de **manches par série**, enfin : SM et AE sont joués à K = 150, et un ICL plus court romprait l'appariement avec les dix-huit exécutions acquises. Cette économie-là détruirait l'actif qu'elle prétend ménager.
+
+**Le levier retenu : l'adversaire jouant l'équilibre.** H3 compare deux mécanismes de **rétention d'information exploitable**. Contre GTO, il n'y a rien à retenir qui serve : l'adversaire n'a pas de faille, et la question de savoir quel dispositif mémoriel conserve le mieux une régularité exploitable n'a pas d'objet là où il n'en existe aucune. Le contrôle négatif, lui, est déjà acquis — trente séries en SM et en AE contre GTO, référence récitée jamais positive (§2.2.2). La tranche ICL se limite donc à **Station et Over-folder, trois réplications, K = 150 : six exécutions**.
+
+| Plan | Exécutions | Plateau à 10 séries | Plafond 16 séries |
+|---|---|---|---|
+| 3 adversaires × 3 réplications | 9 | 62 $ | 106 $ |
+| **2 adversaires × 3 réplications** | **6** | **41 $** | **71 $** |
+| 2 adversaires × 2 réplications | 4 | 27 $ | 47 $ — *non concluant* |
+
+**La contrainte de coût, énoncée comme telle.** Il serait malhonnête de présenter ce retrait comme une décision purement scientifique : *la question a été posée par le budget*. Ce qui relève de la méthode, c'est la réponse — le refus de toucher aux réplications, aux séries et à K, où l'économie aurait détruit la mesure, et le choix de la seule coupe qui laisse H3 intacte. Ce que l'on perd est identifiable : la vérification que la condition ICL ne bat pas l'équilibre contre un adversaire à l'équilibre. Elle est redondante avec ce qu'établissent SM et AE, mais elle n'est pas nulle, et **elle n'aurait pas été retirée sans la contrainte financière**. C'est une économie justifiée, non une économie neutre. Portée à l'ensemble, la campagne revient à 54 $ dans le scénario de plateau et 84 $ au pire, contre 83 à 137 $ pour la matrice complète des vingt-sept exécutions.
+
+**Deux réserves.** D'abord, `σ` est estimé sur SM et AE puis extrapolé à ICL, alors que le fenêtrage introduit une dépendance au contenu susceptible d'accroître la variabilité ; si la différence détectable réelle excédait 0,038, H3 se trouverait à la limite du mesurable, et il faudrait l'écrire plutôt que de conclure. Ensuite, la différence ICL − AE **décroît** sur les trois séries observées : la condition ICL rattrape tant que sa fenêtre n'a pas saturé. Si la saturation ne produisait pas le décrochage attendu, l'effet final pourrait passer sous le seuil — ce serait un résultat en soi, à condition de pouvoir l'affirmer, ce qui suppose précisément les trois réplications retenues.
+
+### 2.2.8 Plan d'analyse
 
 1. **Trajectoires d'adaptation** — figure centrale : `Écart(s)` par série, en grille 3 traitements × 3 adversaires, tracés individuels des réplications et moyenne, avec deux lignes de référence : `y = 0` (exploitation optimale) et l'écart du récitant. Test visuel et quantitatif de **H1** et **H3**.
 2. **Trajectoire (écart, référence récitée)** — par série et par adversaire. Test de **H2** : un récitant reste au voisinage de zéro sur la seconde coordonnée ; un exploiteur s'en écarte, dans des directions dictées par l'adversaire.

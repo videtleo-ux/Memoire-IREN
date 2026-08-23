@@ -220,8 +220,14 @@ identique, la campagne rejoue les mêmes cartes, manche pour manche.
 
 ## 8. Suite
 
-1. **Jouer la tranche ICL** — 9 exécutions, ~62 $ aux prix mesurés, seule voie vers
-   H3.
+1. **Jouer la tranche ICL** — **6 exécutions** (Station et Over-folder, 3
+   réplications, K = 150), 41 $ au plateau et 71 $ au pire. Seule voie vers H3. Le
+   dimensionnement est établi au §2.2.7 du chapitre de méthode : la dispersion des
+   différences appariées mesurée sur cette tranche (`σ = 0,0153`) fixe à **0,038**
+   l'effet minimal détectable à trois réplications, contre **0,138** à deux — alors
+   que l'effet attendu pour H3 est de l'ordre de 0,045. Les réplications, les séries
+   et K ne sont donc pas réductibles ; seul l'adversaire à l'équilibre l'est, faute
+   d'information exploitable à retenir contre lui.
 2. **H4** — le taux d'incohérence raisonnement↔action reste à coder sur
    `decisions.csv` (la colonne `sortie_brute` porte le texte nécessaire), et
    l'inversion des rôles relevée en §2.4 en est un premier cas documenté.
