@@ -1,6 +1,6 @@
 # CONTEXT.md — Contexte vivant du projet
 
-Dernière mise à jour : 2026-08-22. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `spec-build-arene-kuhn(1).md` et `prd/00-vue-densemble.md`.
+Dernière mise à jour : 2026-08-24. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `spec-build-arene-kuhn(1).md` et `prd/00-vue-densemble.md`.
 
 ## 1. Le projet en une phrase
 
@@ -152,6 +152,18 @@ Trois causes d'écart avec l'estimation initiale : **(a)** le français tokenise
 Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL saturées. **Facturation confirmée sur le portail le 2026-08-22 : balance −2,33 $ pour le run de validation** — la prime cache-write est réelle, l'enveloppe ci-dessus fait foi. Aucun opt-out côté client (vérifié dans Hermes : la clé `prompt_caching` ne couvre que le protocole Anthropic, et il n'existe pas de profil fournisseur « nous » exposant un champ de requête pour désactiver le cache). Leviers restants, par ordre : le plateau (10 vs 16 séries = −46 $ sur ICL — et la courbe de validation, déjà à 0,045 en série 3, plaide pour un plateau précoce) ; demander à Nous si un opt-out cache-write existe (~−60 % sur ICL) ; en dernier recours `SERIES_MAX`, qui est une décision scientifique, pas budgétaire (PRD 3 §3).
 
 **Durée** : 28 min (série SM) à 35 min (saturée). Séquentiel : ~109 h (plateau à 10) à ~167 h (plafond) — « deux jours » ne tient qu'avec du parallélisme, désormais sans risque (isolation prouvée : canari réel, témoin, dossiers opaques) : 3 runs de front ≈ 36–56 h, 5 de front ≈ 22–33 h, lancements décalés de 30 s (§4 quinquies).
+
+## 4 octies. Campagne complète (22-24 août 2026) — collecte close
+
+**24 exécutions, 177 séries, 26 550 manches, 27 290 décisions, 47,27 $.** Rejeu de complétude 24/24, intégrité 24/24, zéro action par défaut, zéro relance, zéro erreur de harnais, zéro rupture du gel. Résultats et inventaire complet des données : `memoire/resultats.md`.
+
+**H1, H2 et H3 sont établies.** L'écart AE tombe à 0,000 contre Station et Over-folder et s'y tient ; la référence récitée atteint exactement 7/9 et 1/9, les maxima théoriques de l'exploitation ; le contrôle négatif tient (référence récitée jamais positive contre GTO). H3 est vraie **sous condition** : AE bat ICL contre Station (+0,038 ± 0,015) mais pas contre Over-folder (+0,004 ± 0,006) — le mécanisme de rétention ne compte que là où la tâche exige une politique différenciée par carte. Et le mécanisme n'est pas celui qu'on attendait : ICL ne décroche pas en dents de scie, il **rampe** (descente lente sur dix séries, jamais zéro) là où AE fait une marche unique et immédiate. La différence porte sur la vitesse, pas sur l'oubli.
+
+**⚠️ Piège n°11 — les jetons de rafraîchissement Nous sont à usage unique.** Chaque store clonait `auth.json`, et Hermes place son magasin de jetons partagé **sous `HERMES_HOME`** : chaque run avait donc le sien, et passé l'heure de validité du jeton d'accès, tous rafraîchissaient avec la même copie. Le portail y a vu une réutilisation et a **révoqué la session entière** (« detected refresh-token reuse »). C'est ce qui a coupé l'authentification après la tranche SM+AE, et cela aurait cassé ICL en cours de route. Corrigé : `HERMES_SHARED_AUTH_DIR` désigne un magasin commun aux runs d'une racine (`<racine>/auth-partagee`), avec le verrou qu'Hermes prévoit pour ce cas. L'isolation mémoire n'est pas touchée — c'était l'identité qui était clonée à tort, pas `MEMORY.md`.
+
+**Deux mesures qui changent les projections.** Les journaux bruts pèsent **401 Mo** (le prompt ICL à fenêtre pleine fait 51 000 caractères, répété 1 500 fois par exécution) ; `donnees/decisions.csv` en est l'export sans les prompts, 55 fois plus léger. Et le coût réel d'une exécution ICL est de 4,71 $ (Over-folder) à 6,66 $ (Station) — les séries Station coûtent plus cher parce que l'agent y produit trois fois plus de raisonnement.
+
+**Reste à faire, sans nouvelle collecte** : H4 (incohérence raisonnement↔action, à coder sur `donnees/decisions.csv` ; dégénérescence des mixtes dans `infosets.csv`), la vitesse d'adaptation (mal résolue par K = 150, le plateau AE tombant dès la série 2), et le profil d'oubli d'ICL (jamais observé à cet horizon).
 
 ## 5. Où en est-on / où va-t-on
 

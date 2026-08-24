@@ -1,7 +1,7 @@
-# Résultats — tranche SM et AE
+# Résultats de la campagne
 
-*Campagne du 22 août 2026. Document central : les résultats, et l'inventaire de
-toutes les données et de tous les documents du dispositif.*
+*Campagne des 22-24 août 2026, complète. Document central : les résultats, et
+l'inventaire de toutes les données et de tous les documents du dispositif.*
 
 **Ce document est le point d'entrée unique.** Les mesures sont ci-dessous ; les
 fichiers de données sont dans `donnees/` (§5) ; les documents de conception et de
@@ -14,18 +14,20 @@ journaux bruts complets, dont la taille interdit le versionnement (§5.3).
 
 | | |
 |---|---|
-| Conditions | **SM** (sans mémoire) et **AE** (mémoire auto-écrite) |
-| Adversaires | GTO, Station, Over-folder |
+| Conditions | **SM** (sans mémoire), **ICL** (historique brut), **AE** (auto-écrite) |
+| Adversaires | GTO, Station, Over-folder — ICL sur Station et Over-folder seulement |
 | Réplications | 3 par cellule |
-| Exécutions | **18** (9 SM × 3 séries, 9 AE × 10 séries) |
-| Séries | **117** |
-| Manches | **17 550** · décisions de l'agent : **18 290** |
+| Exécutions | **24** — 9 SM × 3 séries, 9 AE × 10 séries, 6 ICL × 10 séries |
+| Séries | **177** |
+| Manches | **26 550** · décisions de l'agent : **27 290** |
 | Modèle | `openai/gpt-5.6-luna`, effort `medium`, K = 150 |
 | Graine de campagne | `arene-kuhn-2026` |
-| Coût | **13,01 $** |
+| Coût | **47,27 $** (13,01 pour SM+AE, 34,26 pour ICL) |
 
-La condition **ICL** n'est pas jouée : elle constitue la tranche suivante et porte
-l'hypothèse H3.
+La condition ICL est restreinte à deux adversaires : contre GTO il n'y a aucune
+information exploitable à retenir, donc rien que deux mécanismes de rétention
+puissent conserver différemment. Le dimensionnement complet — et l'énoncé de la
+part qui revient à la contrainte de coût — est au §2.2.7 du chapitre de méthode.
 
 ## 2. Résultats
 
@@ -94,7 +96,56 @@ contrairement aux deux adversaires exploitables.
 > l'écart n'y devient jamais négatif* (§2.2.2 et §2.4 du chapitre). Les deux
 > tiennent sur les trente séries jouées.
 
-### 2.4 Le canal mémoire
+### 2.4 Le mécanisme de rétention — H3
+
+La condition ICL reçoit **exactement la même matière** que AE — le récapitulatif
+brut des séries passées — mais sans étape de synthèse : l'expérimentateur empile,
+la fenêtre évince par séries entières, et aucun appel au modèle n'a lieu à la
+frontière. Seul le mécanisme de rétention diffère.
+
+| Adversaire | Répl. | ICL série 0 | ICL série 9 | ICL 4 dernières | AE 4 dernières | Différence |
+|---|---|---|---|---|---|---|
+| Over-folder | r1 | 0,715 | 0,000 | 0,0064 | 0,0000 | +0,0064 |
+| Over-folder | r2 | 0,666 | 0,000 | 0,0021 | 0,0000 | +0,0021 |
+| Over-folder | r3 | 0,722 | 0,012 | 0,0031 | 0,0000 | +0,0031 |
+| Station | r1 | 0,147 | 0,024 | 0,0366 | 0,0025 | **+0,0341** |
+| Station | r2 | 0,261 | 0,015 | 0,0388 | 0,0035 | **+0,0354** |
+| Station | r3 | 0,197 | 0,033 | 0,0461 | 0,0012 | **+0,0449** |
+
+Effets appariés, sur la moyenne des quatre dernières séries — plus robuste qu'un
+point terminal isolé :
+
+| Adversaire | Effet ICL − AE | Écart-type | IC 95 % | Conclusion |
+|---|---|---|---|---|
+| **Station** | **+0,0381** | 0,0059 | ± 0,0148 | l'intervalle exclut zéro : **AE l'emporte** |
+| Over-folder | +0,0039 | 0,0023 | ± 0,0056 | l'intervalle contient zéro : **indistinguable** |
+
+**H3 est vérifiée, mais sous condition — et la condition est interprétable.** Le
+mécanisme de rétention ne départage les deux mémoires que là où la tâche exige une
+politique *différenciée selon la carte*. Contre Over-folder, la stratégie optimale
+tient en une règle unique — engager quel que soit le sceau — et un historique brut
+la maintient aussi bien qu'une note synthétisée : les deux conditions atteignent
+l'exploitation parfaite et s'y tiennent. Contre Station, où il faut cesser de
+bluffer *et* miser pour la valeur au seul sceau supérieur, la synthèse fait la
+différence.
+
+**Le mécanisme observé n'est pas celui qui était anticipé.** Le chapitre prévoyait
+pour ICL un profil d'oubli en dents de scie, produit par l'éviction des séries
+anciennes à la saturation de la fenêtre. Rien de tel n'apparaît : la fenêtre ne
+produit aucun décrochage franc. ICL **rampe** — une descente lente, bruitée, étalée
+sur dix séries, qui ne verrouille jamais zéro — là où AE fait une **marche unique
+et immédiate**, dès la première réflexion, et n'en bouge plus. La différence porte
+donc sur la vitesse et la complétude de l'adaptation, non sur sa rétention.
+
+Une remarque de méthode : la dispersion inter-réplications des paires ICL−AE
+(0,0059 sur Station) est **deux fois et demie plus faible** que celle des paires
+SM−AE (0,0153) sur laquelle le dimensionnement avait été calibré. Les deux
+conditions partageant tout sauf le mécanisme — même matière première, mêmes
+distributions, même modèle —, leurs différences sont nettement moins bruitées. Le
+plan à trois réplications était donc plus que suffisant, alors que le
+dimensionnement le donnait pour tout juste adéquat (§2.2.7 du chapitre).
+
+### 2.5 Le canal mémoire
 
 Les notes tiennent en **une seule entrée**, de 377 à 1 561 caractères : jamais de
 saturation, jamais d'élagage destructeur sur les 90 frontières. Leur longueur suit
@@ -122,27 +173,34 @@ Les 90 notes intégrales : `donnees/notes-ae.md`.
 
 | Contrôle | Résultat |
 |---|---|
-| Rejeu de complétude — chaque manche re-réglée depuis les seuls journaux | **18 / 18** |
-| Intégrité de clôture — donnes, positions, appariement, isolation, complétude | **18 / 18** |
-| Actions imposées par défaut | **0** sur 18 290 décisions |
+| Rejeu de complétude — chaque manche re-réglée depuis les seuls journaux | **24 / 24** |
+| Intégrité de clôture — donnes, positions, appariement, isolation, complétude | **24 / 24** |
+| Actions imposées par défaut | **0** sur 27 290 décisions |
 | Relances de format · erreurs de harnais | **0** · **0** |
-| Ruptures du gel intra-série | **0** sur 117 séries |
+| Ruptures du gel intra-série | **0** sur 177 séries |
 | Écritures mémoire pendant une série | **0** |
-| Équilibre des positions Ouvrant / Répondant | 8 775 / 8 775 |
-| Canari d'isolation réel (écriture confirmée, écriture bloquée en manche) | 18 / 18 |
-| Reconnaissance du jeu source (covariable) | 96 signalements |
-| Récitation d'équilibre (covariable) | 158 signalements |
+| Équilibre des positions Ouvrant / Répondant | 13 275 / 13 275 |
+| Canari d'isolation réel (écriture confirmée, écriture bloquée en manche) | 24 / 24 |
+| Reconnaissance du jeu source (covariable) | 113 signalements |
+| Récitation d'équilibre (covariable) | 198 signalements |
 
-## 4. Limites de cette tranche
+## 4. Limites
 
-- **ICL manque**, donc H3 n'est pas testée. Les résultats ci-dessus établissent
-  qu'il y a adaptation (H1) et qu'elle est exploitative (H2), pas que la mémoire
-  auto-écrite fasse mieux que la réinjection d'historique brut.
-- **Trois réplications** par cellule : on rapporte des effets appariés, pas des
-  tests d'hypothèse dont la puissance serait décorative.
+- **GTO n'est pas joué en ICL**, par un arbitrage exposé au §2.2.7 du chapitre :
+  l'argument est qu'il n'y a rien d'exploitable à retenir contre un adversaire sans
+  faille, mais la question a été posée par le budget, et la vérification qu'ICL ne
+  bat pas l'équilibre contre l'équilibre n'a donc pas été faite.
+- **Trois réplications** par cellule : on rapporte des effets appariés et leurs
+  intervalles, pas des tests d'hypothèse dont la puissance serait décorative.
 - **Le plateau AE est atteint dès la série 2** dans la plupart des cellules ; les
   huit séries suivantes mesurent la *persistance*, pas la vitesse d'adaptation.
-  La vitesse serait mieux résolue par des séries plus courtes.
+  La vitesse serait mieux résolue par des séries plus courtes — et c'est
+  précisément sur elle que se joue la différence avec ICL (§2.4), qui reste donc
+  moins bien résolue qu'elle ne pourrait l'être.
+- **Le profil d'oubli d'ICL n'a pas été observé** : la fenêtre à trois séries n'a
+  pas produit de décrochage à la saturation. On ne peut pas conclure qu'elle n'en
+  produit jamais — seulement qu'à cet horizon, sur ces adversaires, elle n'en a pas
+  produit. Un horizon plus long ou une fenêtre plus étroite reste à explorer.
 - **Le raisonnement n'est observable qu'en partie** : l'essentiel des tokens de
   sortie est de la chaîne de pensée facturée mais jamais restituée (cf. §L.1 du
   chapitre de méthode).
@@ -153,11 +211,11 @@ Les 90 notes intégrales : `donnees/notes-ae.md`.
 
 | Fichier | Lignes | Taille | Contenu |
 |---|---|---|---|
-| `sessions.csv` | 117 | 17 Ko | **Une ligne par série.** Le fichier d'analyse principal : écart, référence récitée, EV, défauts, drapeaux, plateau, coûts. |
-| `decisions.csv` | 18 290 | 5,0 Mo | **Une ligne par décision.** État réel, info-set, action, parsing, résultat, tokens, latence, coût, et le texte intégral produit par le modèle. |
-| `infosets.csv` | 901 | 51 Ko | **Une ligne par série × info-set.** Fréquence `p` et effectif `n` — comment la politique se déplace, info-set par info-set. |
-| `memoire.csv` | 90 | 5 Ko | **Une ligne par frontière AE.** Tailles, entrées ±, élagages, saturations. |
-| `runs.csv` | 18 | 4 Ko | **Une ligne par exécution.** Paramètres, graine, canari, verdicts d'intégrité, agrégats, budget, horodatages. |
+| `sessions.csv` | 177 | 26 Ko | **Une ligne par série.** Le fichier d'analyse principal : écart, référence récitée, EV, défauts, drapeaux, plateau, coûts. |
+| `decisions.csv` | 27 290 | 7,3 Mo | **Une ligne par décision.** État réel, info-set, action, parsing, résultat, tokens, latence, coût, et le texte intégral produit par le modèle. |
+| `infosets.csv` | 1 261 | 75 Ko | **Une ligne par série × info-set.** Fréquence `p` et effectif `n` — comment la politique se déplace, info-set par info-set. |
+| `memoire.csv` | 90 | 5 Ko | **Une ligne par frontière AE.** Tailles, entrées ±, élagages, saturations. La condition ICL n'écrit pas : sa mémoire est le récapitulatif, conservé dans `sessions.csv`. |
+| `runs.csv` | 24 | 6 Ko | **Une ligne par exécution.** Paramètres, graine, canari, verdicts d'intégrité, agrégats, budget, horodatages. |
 | `notes-ae.md` | 90 notes | 94 Ko | **Contenu intégral de `MEMORY.md`** à chaque frontière, avec l'écart de la série correspondante. |
 
 ### 5.2 Correspondance avec les répertoires d'exécution
@@ -170,13 +228,16 @@ correspondance.
 
 ### 5.3 Journaux bruts — non versionnés
 
-`C:\arene-runs\run-<code>\logs\` : `turns.jsonl` (**65 Mo**), `sessions.jsonl`
-(2,6 Mo), `integrite.json`, plus `etat_run.json` à la racine du run.
+`C:\arene-runs\run-<code>\logs\` : `turns.jsonl` (**401 Mo**), `sessions.jsonl`
+(8,1 Mo), `integrite.json`, plus `etat_run.json` à la racine du run.
 
 `decisions.csv` en est l'export intégral **moins le prompt servi** (`vue_servie`),
-qui représente environ 60 % du volume : il est identique d'une manche à l'autre à
-l'état près, et reconstructible depuis les gabarits. Tout le reste est conservé, y
-compris le texte intégral produit par le modèle.
+et le rapport est de 55 pour 1 : 7,3 Mo contre 401. La condition ICL explique
+l'essentiel du volume — à fenêtre pleine, son prompt atteint 51 000 caractères,
+répétés à chacune des 1 500 manches d'une exécution. Ce prompt est identique d'une
+manche à l'autre à l'état de l'épreuve près, et reconstructible depuis les
+gabarits ; tout le reste est conservé, y compris le texte intégral produit par le
+modèle.
 
 Les JSONL restent la **source de vérité** : c'est sur eux que tourne le rejeu de
 complétude, et c'est d'eux que tous les CSV sont dérivés — régénérables à tout
@@ -206,7 +267,8 @@ PYTHONPATH=src python -m arbitre --condition AE --bot Station --K 150 \
     --home-source C:/Users/<vous>/AppData/Local/hermes
 
 # Une tranche complète (pool de 3, décalage 30 s)
-powershell -File scripts/lancer-campagne.ps1
+powershell -File scripts/lancer-campagne.ps1                          # SM + AE
+powershell -File scripts/lancer-campagne.ps1 -Conditions ICL -Bots Station,Over-folder
 
 # Vérifier un run depuis ses seuls journaux
 PYTHONPATH=src python -m journal.rejouer C:/arene-runs/run-<code>/logs
@@ -220,14 +282,19 @@ identique, la campagne rejoue les mêmes cartes, manche pour manche.
 
 ## 8. Suite
 
-1. **Jouer la tranche ICL** — **6 exécutions** (Station et Over-folder, 3
-   réplications, K = 150), 41 $ au plateau et 71 $ au pire. Seule voie vers H3. Le
-   dimensionnement est établi au §2.2.7 du chapitre de méthode : la dispersion des
-   différences appariées mesurée sur cette tranche (`σ = 0,0153`) fixe à **0,038**
-   l'effet minimal détectable à trois réplications, contre **0,138** à deux — alors
-   que l'effet attendu pour H3 est de l'ordre de 0,045. Les réplications, les séries
-   et K ne sont donc pas réductibles ; seul l'adversaire à l'équilibre l'est, faute
-   d'information exploitable à retenir contre lui.
-2. **H4** — le taux d'incohérence raisonnement↔action reste à coder sur
-   `decisions.csv` (la colonne `sortie_brute` porte le texte nécessaire), et
-   l'inversion des rôles relevée en §2.4 en est un premier cas documenté.
+La collecte est close : H1, H2 et H3 sont établies, et aucune exécution
+supplémentaire n'est requise pour les soutenir. Restent trois travaux d'analyse,
+tous conduisibles sur les données déjà déposées.
+
+1. **H4 — l'axe *homo silicus*, seule hypothèse non encore instrumentée.** Le taux
+   d'incohérence raisonnement↔action se code sur `decisions.csv`, dont la colonne
+   `sortie_brute` porte le texte intégral produit par le modèle ; l'inversion des
+   rôles relevée en §2.5 en est un premier cas documenté. La dégénérescence des
+   stratégies mixtes se lit dans `infosets.csv`, par la concentration de `p` aux
+   bornes 0 et 1.
+2. **La vitesse d'adaptation**, qui est ce qui sépare AE d'ICL (§2.4) et que le
+   plan actuel résout mal : le plateau AE est atteint dès la deuxième série. Des
+   séries plus courtes la mesureraient mieux, à coût comparable.
+3. **Le profil d'oubli d'ICL**, jamais observé à cet horizon. Une fenêtre plus
+   étroite ou un horizon plus long dirait s'il existe ou si la réinjection d'un
+   historique brut se contente d'être plus lente, sans jamais oublier.
