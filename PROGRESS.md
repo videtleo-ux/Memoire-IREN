@@ -1,71 +1,113 @@
 # PROGRESS.md — Suivi d'avancement
 
-Dernière mise à jour : 2026-08-21. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ bloqué/attention.
+Dernière mise à jour : 2026-08-25. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ attention.
 
-## Phase 0 — Cadrage (✅ terminée le 2026-08-19)
+> **La collecte est close.** Les phases 0 à 4 sont terminées : le dispositif est
+> construit, calibré, audité, et la campagne a produit ses données. Ce qui reste
+> est de l'analyse sur données acquises et de la rédaction. Résultats et
+> inventaire des données : `memoire/resultats.md`.
 
-- ✅ Lecture et analyse de la spec (`spec-build-arene-kuhn(1).md`)
-- ✅ Questionnaire de cadrage pilote + réponses (budget, N=3, K=200, lexique, périmètre)
-- ✅ Audit de l'environnement : Hermes Agent identifié et inspecté (mémoire native, `hermes -z`, pièges de persistance/isolation/OneDrive)
-- ✅ Re-dérivation analytique complète de l'équilibre de Kuhn et de l'oracle de tests ; constante contestée tranchée (couverture J1-Vael = 2/3 à α=1/3)
-- ✅ Décisions transverses D1–D8 figées
-- ✅ `CONTEXT.md` créé
+## Phase 0 — Cadrage (✅ 2026-08-19)
 
-## Phase 1 — PRD (✅ terminée le 2026-08-19)
+- ✅ Spec analysée, questionnaire de cadrage, périmètre arrêté
+- ✅ Audit d'environnement : Hermes Agent identifié et inspecté (mémoire native, `hermes -z`, pièges de persistance, d'isolation, OneDrive)
+- ✅ Équilibre de Kuhn re-dérivé à la main ; constante contestée tranchée (couverture J1-Vael = 2/3 à α = 1/3)
+- ✅ Décisions transverses D1–D8 figées · `CONTEXT.md` créé
 
-- ✅ `prd/00-vue-densemble.md` — architecture, décisions D1–D8, paramètres, carte des PRD
-- ✅ `prd/01-moteur-de-jeu.md` — règles obfusquées, bots, GTO (constante tranchée : 2/3), meilleure réponse, écart exact, oracle de tests T1–T9 · **v1.1** : formules en α de T5/T6 corrigées (§7.1) au moment de l'implémentation
-- ✅ `prd/02-harnais-memoire.md` — 3 conditions via hermes -z, gel fichiers, isolation HERMES_HOME + canari, prompts, parsing des actions
-- ✅ `prd/03-arbitre-orchestration.md` — boucle de session, 3 flux aléatoires seedés, critère de plateau automatisé, pilote de calibrage, enveloppe de coût 20–50 €
-- ✅ `prd/04-logging-analyse.md` — schémas turns.jsonl/sessions.jsonl, CSV dérivés, Git, détecteur dé-obfuscation/récitation, plan d'analyse
+## Phase 1 — PRD (✅ 2026-08-19)
 
-## Phase 2 — Build (🔄 en cours, ordre imposé par les dépendances)
+- ✅ `prd/00` à `prd/04` — architecture, moteur, harnais, arbitre, journalisation
 
-- ✅ Moteur de jeu + suite de tests oracle (PRD 1) — `src/moteur/`, `tests/test_moteur.py`, **41 tests**, arithmétique exacte en `Fraction`, zéro dépendance
-- ✅ Harnais mémoire (PRD 2) — `src/harnais/`, `tests/test_harnais.py`, **56 tests**. Gabarits obfusqués + hash des règles, parsing strict/repli/relance/défaut, gel fichiers, stores isolés, canari d'isolation, 3 conditions SM/ICL/AE. **Canari exécuté pour de vrai** le 2026-08-21 (store jetable, modèle gratuit) : écriture confirmée dans le store du run, absente du home global, écriture impossible en configuration de manche.
-- ✅ Logging (PRD 4) — `src/journal/`, `tests/test_journal.py`, **44 tests**. Schémas JSONL validés à l'écriture, détecteur dé-obfuscation/récitation à deux niveaux, CSV dérivés, `rejouer.py` (re-règle chaque manche depuis les seuls logs et retrouve π̂ et l'écart).
-- ✅ Arbitre & orchestration (PRD 3) — `src/arbitre/`, `tests/test_arbitre.py`, **43 tests**. Donnes *dérivées* de la graine de campagne (fonction pure de `(graine, r, s, k)`, donc appariées entre conditions par construction), flux du bot seedé par manche, boucle session/manche avec gel avant chaque manche, manche atomique (rejeu à donne identique sur `ErreurHarnais`), récap canonique, π̂ + mesures exactes, critère de plateau automatisé, état de run et reprise sur incident, vérifications d'intégrité de clôture, CLI `python -m arbitre`.
-- ✅ Test de bout en bout : mini-run `SM-station-r1` (1 série, K = 20, Station, SM, `tencent/hy3:free`) exécuté le 2026-08-21. Intégrité verte, rejeu complet, **100 % de parsing**, positions 10/10, canari et gel prouvés sur le binaire réel, écart = 1/18 exact. Quatre constats consignés en `CONTEXT.md` §4 quater.
+## Phase 2 — Build (✅ 2026-08-21)
 
-Total : **201 tests verts en ~13 s**, toujours sans dépendance ni appel API dans la suite.
+- ✅ Moteur de jeu (PRD 1) — arithmétique exacte en `Fraction`, oracle T1–T9
+- ✅ Harnais mémoire (PRD 2) — trois conditions, gel fichiers, stores isolés, canari
+- ✅ Journal (PRD 4) — schémas validés à l'écriture, détecteur de dé-obfuscation, rejeu
+- ✅ Arbitre (PRD 3) — donnes dérivées, boucle session/manche, plateau, reprise sur incident
+- ✅ Mini-run de bout en bout sur modèle gratuit
 
-## Phase 3 — Pilote de calibrage (🔄 quasi terminé, 2026-08-21)
+**225 tests verts**, sans dépendance ni appel API dans la suite.
 
-- ✅ **Modèle arrêté** : `openai/gpt-5.6-luna`, effort `medium`. Parsing **260/260** sur 4 runs réels. `tencent/hy3:free` écarté (ignore le contrôle d'effort, 4 000 tokens de raisonnement non réductibles, 5× plus lent).
-- ✅ **K = 150 validé sur pièces** : |écart(150) − écart(200)| = 0,0032, quinze fois sous le seuil du PRD 3 §7.3.
-- ✅ **Coût projeté** : 41 $ attendu (plateau à 10 séries), 63 $ au pire (plafond 16). Mesuré : 0,172 $ la série de 200 manches.
-- ✅ **Les trois conditions tournent pour de vrai.** AE atteint la meilleure réponse exacte après une seule réflexion ; ICL descend plus lentement ; SM plafonne à ~0,23 — pas d'effet plafond, la marge de mesure existe.
-- ✅ **Deux failles majeures trouvées et corrigées** (pièges n°7 et n°8, `CONTEXT.md` §4 quinquies) : `CLAUDE.md` injecté dans le prompt de l'agent, et les échecs de fournisseur pris pour des réponses.
-- ✅ **Fenêtre ICL portée à 13 000 tokens** (3 séries entières à K=150). À 6 000, elle n'en contenait plus qu'une et H3 devenait tautologique.
-- ⬜ Installation + vérification d'Hermes Agent sur le Mac M2 (si campagne multi-machines confirmée)
+## Phase 3 — Pilote de calibrage (✅ 2026-08-21)
 
-## Phase 4 — Campagne (⬜)
+- ✅ Modèle arrêté : `openai/gpt-5.6-luna`, effort `medium` · K = 150 validé sur pièces
+- ✅ Fenêtre ICL portée à trois séries (sans quoi H3 devenait tautologique)
+- ✅ **Deux failles de contamination trouvées et corrigées** (pièges n°7 et n°8)
+- ✅ Pas d'effet plafond : la marge de mesure existe
 
-- ⬜ 27 runs (3 conditions × 3 bots × N=3), affectation run→machine randomisée et loguée
-- ⬜ Collecte centralisée des logs via Git
-- ⬜ Vérifications d'intégrité (donnes communes identiques, isolation, drapeaux de dé-obfuscation)
+## Phase 3 bis — Audit adversarial (✅ 2026-08-22)
 
-## Phase 5 — Analyse & mémoire (⬜)
+Conduit **avant** la campagne, sur un dispositif réputé terminé. Quatre constats,
+tous à la frontière avec l'outillage tiers, aucun dans le code du dépôt, aucun
+détecté par les tests, aucun visible dans les journaux (`AUDIT.md`, `CONTEXT.md` §4 sexies) :
 
-- ⬜ Courbes d'écart d'exploitation par condition × bot (plate / dents de scie / escalier ?)
-- ⬜ Analyse du contenu MEMORY.md (que distille l'agent ? élagage destructeur ?)
-- ⬜ Test d'effet-machine a posteriori
-- ⬜ Rédaction du mémoire + préparation soutenance
+- ✅ **C1** — le chemin du magasin, servi à l'agent par le prompt système, nommait son adversaire → répertoires d'exécution en code opaque
+- ✅ **C2** — le prompt ICL à fenêtre pleine dépasse la ligne de commande Windows → transmission par fichier, sans toucher aux paramètres expérimentaux
+- ✅ **C3** — les signatures textuelles de panne étaient incomplètes → verdict lu dans le rapport d'usage d'Hermes
+- ✅ **C4** — les tokens d'entrée logués valaient 3 (comptés nets du cache) → les trois postes sont enregistrés
 
-## ⚠️ Points ouverts / bloquants
+## Phase 4 — Campagne (✅ 2026-08-22 au 24)
 
-| Point | Porteur | Impact si non résolu |
+- ✅ **Tranche SM + AE** — 18 exécutions, 117 séries, 13,01 $
+- ✅ **Tranche ICL** — 6 exécutions (Station et Over-folder, dimensionnement au §2.2.7 du chapitre de méthode), 34,26 $
+- ✅ **Total : 24 exécutions, 177 séries, 26 550 manches, 27 290 décisions, 47,27 $**
+- ✅ Rejeu de complétude **24/24**, intégrité **24/24**, zéro action par défaut, zéro relance, zéro erreur de harnais, zéro rupture du gel
+- ✅ Données versionnées dans `donnees/` ; journaux bruts (401 Mo) hors dépôt
+
+**Trois incidents, tous rattrapés sans perte de données** : limite de débit du
+fournisseur prise pour une panne (le harnais patiente désormais) ; révocation de
+session par réutilisation d'un jeton à usage unique (magasin de jetons partagé —
+piège n°11) ; erreur de passage de paramètres au lanceur, interceptée par le CLI
+avant tout appel API.
+
+## Phase 5 — Analyse & mémoire (🔄 en cours)
+
+- ✅ **H1** — l'adaptation vient de la mémoire (effet apparié +0,704 / +0,220 / +0,178 selon l'adversaire, neuf paires sur neuf dans le même sens)
+- ✅ **H2** — elle exploite, elle ne récite pas (référence récitée à +0,778 et +0,110, les maxima théoriques ; contrôle négatif tenu)
+- ✅ **H3** — le mécanisme de rétention compte, mais seulement là où la tâche exige une politique différenciée (+0,038 ± 0,015 contre Station ; indistinguable contre Over-folder)
+- 🔄 **H4** — non instrumentée. Deux mesures automatiques à écrire sur `donnees/` (incohérence raisonnement↔action, dégénérescence des mixtes), plus un codage manuel sur échantillon stratifié
+- ✅ Analyse qualitative du canal mémoire (90 notes intégrales dans `donnees/notes-ae.md`)
+- 🔄 Chapitre de méthode (`memoire/methodologie.md`) et résultats (`memoire/resultats.md`)
+- ⬜ Rédaction des autres chapitres, préparation de la soutenance
+
+### Ce que H4 demande exactement
+
+1. **Incohérence raisonnement↔action**, automatique : comparer l'action de la ligne
+   `ACTION:` à la dernière action nommée dans le texte libre. Mesurable sur
+   **13 466 décisions (49,3 %)** — celles où l'agent écrit au-delà de sa ligne
+   d'action. ⚠️ Biais de sélection à déclarer : 28 % en SM, 36 % en ICL, 64 % en AE.
+2. **Dégénérescence des mixtes**, automatique : concentration de `p` aux bornes.
+   ⚠️ **Ventiler par adversaire** — contre Station et Over-folder la meilleure
+   réponse *est* pure, y être n'est pas un biais. Le signal est contre GTO, où
+   l'équilibre exige du mixte : `J1/C0/ouverture` (attendu 1/3) est aux bornes dans
+   **58 %** des séries.
+3. **Codage manuel** sur échantillon stratifié (150 à 200 décisions suffisent),
+   selon les cinq catégories GTBENCH, pour estimer le taux de faux négatifs de la
+   mesure automatique. Un cas est déjà documenté : l'inversion des rôles dans une
+   note AE, avec stratégie jouée pourtant correcte.
+
+## ⚠️ Points ouverts
+
+| Point | Porteur | Impact |
 |---|---|---|
-| Papier Loriente & Diez à transmettre | Léo | Aucun sur le build (D6) ; manque un recoupement citable dans le mémoire |
-| Hermes non installé sur le Mac M2 | Léo | Campagne mono-machine (plus lente), pas d'invalidation |
-| Audit indépendant avant campagne | Léo | Deux failles de contamination trouvées par hasard au pilote ; une troisième passerait inaperçue |
+| Papier Loriente & Diez à transmettre | Léo | Aucun sur les résultats ; manque un recoupement citable |
+| GTO non joué en condition ICL | — | Arbitrage assumé (§2.2.7) ; la vérification qu'ICL ne bat pas l'équilibre contre l'équilibre n'a pas été faite |
+| Profil d'oubli d'ICL jamais observé | — | La fenêtre n'a pas produit de décrochage à cet horizon ; demanderait un autre protocole, pas plus du même |
 
-## Journal des sessions de travail
+Le Mac M2 n'est plus un point ouvert : la campagne a tourné sur une seule machine,
+ce qui supprime aussi le test d'effet-machine (sans objet).
+
+## Journal des sessions
 
 | Date | Fait |
 |---|---|
-| 2026-08-19 | Cadrage complet, audit environnement, oracle analytique, D1–D8, CONTEXT.md, PROGRESS.md, PRD 00–04 rédigés. |
-| 2026-08-19 | **Phase 2, étape 1 : moteur de jeu implémenté et testé** (`src/moteur/`, 41 tests T1–T9 verts). Constante GTO 2/3 confirmée par T2 (la variante 1/3 est bien exploitable). Formules en α de T5/T6 corrigées → PRD 1 v1.1 §7.1. |
-| 2026-08-21 | **Phase 2, étapes 2 et 3 : harnais mémoire (PRD 2) et logging (PRD 4)** (`src/harnais/`, `src/journal/`, 100 tests de plus, 141 au total). Clés de config Hermes relevées dans son code source et **vérifiées sur machine** ; canari d'isolation réel passé. Trois constats à retenir : `context_engine` est le toolset « zéro outil » utilisable (`memory` en expose exactement un) ; le modèle gratuit hallucine des appels d'outils quand on ne lui en donne aucun (drapeau `sortie_pseudo_outil`) ; l'auto-déclaration d'outils par l'agent n'est pas fiable, le canari vérifie donc un fichier, pas une réponse. |
-| 2026-08-21 | **Phase 2, étape 4 : arbitre & orchestration (PRD 3)** (`src/arbitre/`, 43 tests de plus, 184 au total). Le build est terminé : aucune couche ne manque entre la graine de campagne et le CSV d'analyse. Quatre choix d'implémentation à retenir (détail en `CONTEXT.md` §4 ter) : donnes **dérivées** au lieu de tirées ; manche **atomique** (les tours ne sont écrits qu'à la fin de la manche) ; tours d'une série interrompue **déplacés** vers `turns.abandonnes.jsonl` ; π̂ estimée depuis les lignes de log déjà écrites, via `journal.estimer_pi_hat`. **Prochaine action : le mini-run de bout en bout** — `PYTHONPATH=src python -m arbitre --condition SM --bot Station --K 20 --series 1`, sur le modèle gratuit, premier appel API réel du projet. |
-| 2026-08-21 | **Phase 3 : pilote de calibrage complet** sur `openai/gpt-5.6-luna`. Sept runs réels, les trois conditions éprouvées. **Deux failles majeures trouvées et corrigées** : Hermes injectait `CLAUDE.md` du dépôt — donc le corrigé de l'expérience — dans son prompt système à chaque manche (piège n°7) ; et `hermes -z` rendait les échecs de fournisseur sur stdout avec le code retour 0, où le harnais les prenait pour des réponses du modèle (piège n°8). Modèle et paramètres arrêtés, K=150 validé sur pièces, budget borné à 41-63 $. **AE atteint la meilleure réponse exacte après une seule réflexion.** Détail en `CONTEXT.md` §4 quinquies. **Prochaine action : trancher la fenêtre ICL, puis lancer la campagne.** |
+| 2026-08-19 | Cadrage, audit d'environnement, oracle analytique, D1–D8, PRD 00–04. |
+| 2026-08-19 | Moteur de jeu implémenté et testé ; constante GTO 2/3 confirmée par l'oracle. |
+| 2026-08-21 | Harnais mémoire et journal ; clés de config relevées dans le code d'Hermes et vérifiées par canari réel. |
+| 2026-08-21 | Arbitre et orchestration ; le build est complet de la graine au CSV. |
+| 2026-08-21 | Pilote de calibrage sur `gpt-5.6-luna`. Deux failles de contamination trouvées et corrigées (pièges n°7 et n°8). |
+| 2026-08-22 | **Audit adversarial** : quatre constats, tous à la frontière avec l'outillage tiers. Correctifs et tests de non-régression. |
+| 2026-08-22 | **Tranche SM + AE** : 18 exécutions. H1 et H2 établies. |
+| 2026-08-23 | Piège n°11 (jetons à usage unique) trouvé et corrigé avant qu'il ne casse la tranche ICL. |
+| 2026-08-24 | **Tranche ICL** : 6 exécutions. H3 établie, sous condition. Collecte close. |
+| 2026-08-25 | Documents mis à jour ; chapitre de méthode en version définitive. |
