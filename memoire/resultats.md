@@ -8,6 +8,12 @@ fichiers de données sont dans `donnees/` (§5) ; les documents de conception et
 méthode sont recensés en §6. Rien d'essentiel ne vit ailleurs — hormis les
 journaux bruts complets, dont la taille interdit le versionnement (§5.3).
 
+> **Versions consultables en ligne** (privées, partageables depuis leur menu) :
+> [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) ·
+> [résultats et courbes d'adaptation](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b).
+> Elles sont générées depuis les Markdown de ce dépôt par `analyse/rendre-*.py` :
+> le Markdown reste la source, la page n'en est que la mise en forme.
+
 ---
 
 ## 1. Ce qui a été joué

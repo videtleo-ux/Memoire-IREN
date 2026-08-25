@@ -2,6 +2,8 @@
 
 Dernière mise à jour : 2026-08-25. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ attention.
 
+> **Pages en ligne** : [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) · [résultats](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b) — régénérables par `analyse/rendre-*.py`.
+>
 > **La collecte est close.** Les phases 0 à 4 sont terminées : le dispositif est
 > construit, calibré, audité, et la campagne a produit ses données. Ce qui reste
 > est de l'analyse sur données acquises et de la rédaction. Résultats et
