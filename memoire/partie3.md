@@ -180,6 +180,40 @@ sensiblement moins bon qu'un récitant. Le modèle ne joue pas l'équilibre de
 mémoire ; il joue moins bien, et la mémoire persistante ne lui sert pas à s'en
 souvenir mais à le dépasser.
 
+### 3.3.2 Ce que ces valeurs doivent au choix de l'équilibre
+
+L'équilibre de Kuhn est une famille à un paramètre et le protocole en a retenu un
+membre, α = 1/3 (§2.2.2). Il faut dire ce que les chiffres ci-dessus lui doivent,
+d'autant que la réponse départage nettement les énoncés.
+
+**Le résultat principal n'y doit rien.** L'écart d'exploitation se mesure contre
+la meilleure réponse, dont l'espérance est indépendante de l'équilibre choisi ;
+il est donc α-libre, et H1 comme H3 avec lui. Il en va de même de l'énoncé central
+de cette section : *atteindre exactement le maximum d'exploitation* équivaut à
+*afficher un écart nul*, puisque le maximum et l'écart somment à une constante
+(§3.1). La conclusion « l'agent exploite jusqu'à l'optimum » vaudrait donc à
+l'identique pour n'importe quel membre de la famille.
+
+**L'échelle, elle, en dépend entièrement.** L'espérance de la politique
+d'équilibre contre les deux adversaires biaisés passe de 1/9 à 2/9 lorsque α va
+de 0 à 1/3 ; le plafond de la référence récitée descend en conséquence de 8/9 à
+7/9 contre Over-folder, et de 2/9 à 1/9 contre Station. Les colonnes du tableau
+ci-dessus sont donc lisibles à α = 1/3, et à lui seul.
+
+**Une observation change de sens selon α, et c'est celle qu'il faut nuancer.** Le
+constat « sans mémoire, l'agent est en dessous de l'équilibre » vaut à α = 1/3 :
+il y est à −0,111 contre Station. Recalculé contre le membre α = 0 de la famille,
+le même agent afficherait +0,001 — soit exactement le niveau de l'équilibre. Ce
+que la campagne établit n'est donc pas que le modèle joue mal dans l'absolu, mais
+qu'**il n'atteint pas le meilleur équilibre disponible**, ce qui est une
+proposition plus faible et plus exacte.
+
+Reste que ce choix est le plus exigeant des trois : α = 1/3 est le membre de la
+famille qui exploite le mieux Station et Over-folder. Le récitant auquel l'agent
+est comparé est le plus fort que la théorie autorise, et le dépasser est donc un
+résultat plus fort — non plus faible — que s'il avait été comparé à un récitant
+plus timide.
+
 ### 3.3.1 Le contrôle négatif
 
 L'adversaire jouant l'équilibre fournit une falsification interne du dispositif
@@ -241,7 +275,7 @@ ininterprétable.
 
 Il faut ajouter que la condition ICL n'est pas désavantagée par la capacité : sa
 fenêtre contient trois séries entières, soit 450 manches de journal brut, là où
-les notes de l'agent tiennent en 377 à 1 561 caractères (§3.5). Si l'une des deux
+les notes de l'agent tiennent en 333 à 1 906 caractères (§3.5). Si l'une des deux
 conditions dispose de plus d'information à l'instant de décider, c'est ICL.
 
 ### 3.4.2 L'effet mesuré
@@ -351,8 +385,9 @@ simple.
 
 Contre Over-folder, la politique optimale tient en **une règle unique et
 positive** : engager, quel que soit le sceau. Elle ne demande aucune distinction
-entre les cartes, et le journal brut la porte de façon transparente — trois cents
-engagements suivis de trois cents retraits adverses n'admettent qu'une lecture.
+entre les cartes, et le journal brut la porte de façon transparente — cent
+cinquante engagements suivis de cent cinquante retraits adverses, à chaque série,
+n'admettent qu'une lecture.
 Les deux mécanismes l'extraient immédiatement et intégralement.
 
 Contre Station, la politique optimale demande **deux règles, dont une négative**,
@@ -412,7 +447,7 @@ Une fenêtre plus étroite ou un horizon plus long reste à explorer.
 **La condition ICL n'a pas été jouée contre l'adversaire à l'équilibre.** Cet
 arbitrage est exposé et assumé au §2.2.7 : il n'y a rien d'exploitable à retenir
 contre un adversaire sans faille, et le contrôle négatif est acquis par ailleurs
-sur trente séries en SM et en AE. Mais la question a d'abord été posée par le
+sur trente-neuf séries en SM et en AE. Mais la question a d'abord été posée par le
 budget, et la vérification qu'une réinjection d'historique ne bat pas l'équilibre
 contre l'équilibre n'a donc pas été faite.
 

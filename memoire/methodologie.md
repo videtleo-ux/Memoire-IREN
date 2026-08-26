@@ -89,6 +89,20 @@ L'agent affronte trois politiques fixes, connues de l'expérimentateur et jamais
 
 Ce triplet n'est pas un échantillon d'adversaires : c'est un **plan de test**.
 
+> **L'équilibre de Kuhn n'est pas unique, et le paramètre retenu doit être énoncé.**
+> Le jeu admet une **famille d'équilibres à un paramètre**, α ∈ [0, 1/3] : le premier joueur mise la carte forte avec probabilité 3α, bluffe la carte faible avec probabilité α, et couvre la carte moyenne face à une mise avec probabilité α + 1/3. Le protocole retient **α = 1/3**, valeur figée avant la campagne. Ce choix a une portée qu'il faut mesurer, car l'espérance de la politique d'équilibre en dépend :
+>
+> | α | EV(équilibre) contre Station et Over-folder | Écart d'un récitant |
+> |---|---|---|
+> | 0 | 1/9 | 2/9 · 8/9 |
+> | **1/3** | **2/9** | **1/9 · 7/9** |
+>
+> Trois conséquences, dont deux rassurantes. D'abord, **l'écart d'exploitation ne dépend pas de α** : il se mesure contre la meilleure réponse, dont l'espérance (1/3 contre Station, 1 contre Over-folder) est indépendante de l'équilibre choisi. H1 et H3, qui ne mobilisent que lui, sont donc insensibles à ce paramètre. Ensuite, l'énoncé central de H2 — *l'agent atteint exactement le maximum d'exploitation* — équivaut à *l'écart est nul*, et hérite de la même invariance : il tiendrait à l'identique pour n'importe quel membre de la famille.
+>
+> Ce qui dépend de α, en revanche, est l'**échelle** de la référence récitée et la position du niveau sans mémoire relativement à zéro. Ces valeurs sont donc à lire comme conditionnelles au choix de α, et rapportées comme telles.
+>
+> Enfin, ce choix est le plus **exigeant** des trois : α = 1/3 est le membre de la famille qui exploite le mieux les deux adversaires biaisés (2/9 contre 1/9). Le récitant auquel l'agent est comparé est donc le plus fort que la théorie autorise, et non le plus commode.
+
 **GTO est le contrôle négatif**, et c'est la **référence récitée** qui le teste. Contre un adversaire jouant l'équilibre, aucune politique ne rapporte davantage que l'équilibre lui-même : cette mesure ne peut donc pas y devenir positive. Une valeur positive contre GTO signalerait un défaut de l'instrument et invaliderait les résultats obtenus contre les deux autres adversaires. (Un écart négatif serait le même événement, non un second test : contre cet adversaire la référence récitée est l'opposé exact de l'écart — cf. §2.4.)
 
 L'écart, en revanche, **peut légitimement décroître contre GTO**, et il importe de ne pas y voir un artefact. Il mesure la distance à la meilleure réponse : un agent qui cesse de commettre des fautes grossières s'en rapproche sans exploiter quoi que ce soit, puisque l'ensemble des meilleures réponses à l'équilibre rapporte exactement la valeur du jeu. C'est précisément la distinction que le triplet d'adversaires permet d'établir — contre GTO, une mémoire ne peut que corriger des erreurs propres ; contre Station et Over-folder, elle peut en outre punir une faille. Le contrôle qui tranche entre les deux lectures est la condition sans mémoire : si une telle décroissance venait de l'instrument, elle s'y observerait également, sur les mêmes distributions et le même calcul.
@@ -234,7 +248,7 @@ Le passage de trois à deux réplications ne coûte pas un tiers de précision :
 
 **Trois leviers écartés.** Le nombre de **réplications**, pour la raison ci-dessus. Le nombre de **séries** : la fenêtre contient trois séries, l'éviction ne commence donc qu'à la quatrième, et l'exécution disponible s'arrête précisément avant — le décrochage que H3 prédit lorsque la fenêtre sature n'a jamais été observé, et raccourcir les séries reviendrait à interrompre l'expérience avant l'événement qu'elle cherche. Le nombre de **manches par série**, enfin : SM et AE sont joués à K = 150, et un ICL plus court romprait l'appariement avec les dix-huit exécutions acquises. Cette économie-là détruirait l'actif qu'elle prétend ménager.
 
-**Le levier retenu : l'adversaire jouant l'équilibre.** H3 compare deux mécanismes de **rétention d'information exploitable**. Contre GTO, il n'y a rien à retenir qui serve : l'adversaire n'a pas de faille, et la question de savoir quel dispositif mémoriel conserve le mieux une régularité exploitable n'a pas d'objet là où il n'en existe aucune. Le contrôle négatif, lui, est déjà acquis — trente séries en SM et en AE contre GTO, référence récitée jamais positive (§2.2.2). La tranche ICL se limite donc à **Station et Over-folder, trois réplications, K = 150 : six exécutions**.
+**Le levier retenu : l'adversaire jouant l'équilibre.** H3 compare deux mécanismes de **rétention d'information exploitable**. Contre GTO, il n'y a rien à retenir qui serve : l'adversaire n'a pas de faille, et la question de savoir quel dispositif mémoriel conserve le mieux une régularité exploitable n'a pas d'objet là où il n'en existe aucune. Le contrôle négatif, lui, est déjà acquis — trente-neuf séries en SM et en AE contre GTO, référence récitée jamais positive (§2.2.2). La tranche ICL se limite donc à **Station et Over-folder, trois réplications, K = 150 : six exécutions**.
 
 | Plan | Exécutions | Plateau à 10 séries | Plafond 16 séries |
 |---|---|---|---|
