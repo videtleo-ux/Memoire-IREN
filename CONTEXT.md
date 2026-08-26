@@ -163,7 +163,9 @@ Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL
 
 **Deux mesures qui changent les projections.** Les journaux bruts pèsent **401 Mo** (le prompt ICL à fenêtre pleine fait 51 000 caractères, répété 1 500 fois par exécution) ; `donnees/decisions.csv` en est l'export sans les prompts, 55 fois plus léger. Et le coût réel d'une exécution ICL est de 4,71 $ (Over-folder) à 6,66 $ (Station) — les séries Station coûtent plus cher parce que l'agent y produit trois fois plus de raisonnement.
 
-**Reste à faire, sans nouvelle collecte** : H4 (incohérence raisonnement↔action, à coder sur `donnees/decisions.csv` ; dégénérescence des mixtes dans `infosets.csv`), la vitesse d'adaptation (mal résolue par K = 150, le plateau AE tombant dès la série 2), et le profil d'oubli d'ICL (jamais observé à cet horizon).
+**Analyse close le 2026-08-26.** H4 est instrumentée (`analyse/h4.py` → `memoire/h4-mesures.md`) : la règle d'incohérence pré-enregistrée s'est révélée invalide (47,8 % artefactuels, huit faux positifs sur huit relus), et la dégénérescence des mixtes livre le résultat central — 0 % de séries aux bornes sans mémoire, 56 % dès qu'une note est écrite, avec un contrôle interne (la série 0 d'une exécution AE, note encore vide, n'y est pas). La partie III est rédigée (`memoire/partie3.md`). Le codage manuel sur échantillon stratifié est écarté du périmètre.
+
+**Ce qui resterait, hors périmètre** : la vitesse d'adaptation (mal résolue par K = 150, le plateau tombant dès la série 1) et le profil d'oubli d'ICL (jamais observé à cet horizon). Les deux demanderaient un autre protocole, pas plus du même.
 
 ## 5. Où en est-on / où va-t-on
 
