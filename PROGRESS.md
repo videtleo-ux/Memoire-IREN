@@ -5,8 +5,9 @@ Dernière mise à jour : 2026-08-26. Convention : ✅ fait · 🔄 en cours · �
 > **Pages en ligne** : [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) · [résultats](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b) · [plan de la partie III](https://claude.ai/code/artifact/79b11edd-7000-4027-a905-c296ee7bdadf) — les deux premières régénérables par `analyse/rendre-*.py`.
 >
 > **La collecte est close et l'analyse est terminée.** Les quatre hypothèses sont
-> instrumentées et la partie III est rédigée. Ce qui reste est de la rédaction sur
-> les autres chapitres et de la mise en forme. Résultats et inventaire des données :
+> instrumentées, la partie III est rédigée **et reportée dans le `.docx`**. Ce qui
+> reste est de la rédaction sur les autres chapitres et de la mise en forme —
+> détail dans l'audit du document plus bas. Résultats et inventaire des données :
 > `memoire/resultats.md`.
 
 ## Phase 0 — Cadrage (✅ 2026-08-19)
@@ -75,8 +76,8 @@ avant tout appel API.
 
 - ✅ **Partie III rédigée** — `memoire/partie3.md`, sections 3.1 à 3.7, ~7 900 mots. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`, export Word par `analyse/rendre-partie3-docx.py` → `memoire/partie3.docx`.
 - ✅ **Chapitre de méthode** — quatre corrections appliquées (§2.4 contrôle négatif énoncé comme un seul test ; §2.2.5.3 règle d'incohérence signalée invalide ; §2.2.3 SM n'est plus « le niveau récité » ; §2.2.9 point 2 du plan d'analyse). Plus l'encadré sur α.
-- 🔄 **Report dans le `.docx`** — la partie III est prête à coller ; deux corrections du chapitre 2 restent à porter à la main (liste au bas de `memoire/partie3-plan.md`).
-- ⬜ **Ce que l'audit du 2026-08-26 a relevé dans le `.docx`** — voir ci-dessous.
+- ✅ **Partie III reportée dans le `.docx`** (2026-08-26, à la main) — sections 3.1 à 3.7 collées, les treize tableaux convertis en vraies tables Word, les deux figures insérées. Le document passe de 269 à 538 paragraphes et de 251 Ko à 766 Ko. Le chapitre 2 y est désormais complet jusqu'à la validité interne.
+- 🔄 **Ce qu'il reste à porter dans le `.docx`** — la sous-section 3.3.2 (conditionnalité en α) et les deux corrections du chapitre 2 listées au bas de `memoire/partie3-plan.md` ; plus l'audit ci-dessous.
 - ⬜ Rédaction des parties 1 et 4, préparation de la soutenance
 
 ### Où en est H4 — `analyse/h4.py`, rapport dans `memoire/h4-mesures.md`
@@ -114,14 +115,19 @@ Le `.docx` complet a été relu et chaque chiffre recoupé contre `donnees/`.
 dimensionnement sont exacts, les effets appariés sont justes. Ce qui suit est de la
 rédaction et de la mise en forme, à la charge de Léo.
 
+**État après le report de la partie III** (vérifié sur le `.docx` de travail, non
+commité) : les placeholders `SOURCE`, `(mettre l'auteur)` et « I don't know » ont
+disparu ; la bibliographie a reçu quinze entrées numérotées `[1]`–`[15]`. Le reste
+du tableau tient toujours, et le collage a ajouté du Markdown brut.
+
 | Priorité | Constat |
 |---|---|
-| 🔴 | **17 références citées absentes de la bibliographie** — dont Borel 1938, Von Neumann 1928, Ferguson 2004, Reiley 2005/2008, Gao 2025, Wang 2023a (VOYAGER), Packer 2024 (MEMO), Guan 2024 (Richelieu). Et 6 références jamais citées. Deux systèmes de citation coexistent ; Loriente & Diez est un placeholder ; ~15 marqueurs `[188]`, `[305, 373]` d'un autre système traînent. |
+| 🔴 | **Bibliographie — partiellement traitée.** Quinze entrées numérotées `[1]`–`[15]` ont été ajoutées, mais les deux systèmes de citation coexistent toujours (numéroté et auteur-date), Loriente & Diez reste un placeholder, et 23 marqueurs `[188]`, `[305, 373]` d'un autre système traînent. Reste à vérifier les références citées et absentes (Borel 1938, Von Neumann 1928, Ferguson 2004, Reiley 2005/2008, Gao 2025, Wang 2023a, Packer 2024, Guan 2024) et les 6 jamais citées. |
 | 🔴 | **Tous les renvois croisés du chapitre 2 pointent dans le vide** — le document numérote 2.1 / 2.3.x / 2.5, le texte renvoie à §2.2.x. Idem §1.5.4 et §L.1. |
-| 🔴 | **Quatre blocs du chapitre 2 absents du `.docx`** — le plan d'analyse (§2.2.9, auquel la partie III renvoie), les trois paragraphes SM/ICL/AE de §2.2.3, les deux sous-sections d'audit de §2.4, et tout le bloc Limites (L.1, L.1 bis, L.2). |
-| 🟠 | **Markdown non converti** — 39 `**`, 41 accents graves, 22 lignes de tableau en tubes, un `M<sub>s</sub>`, un `## 2.5`. Le tableau de validité interne est entièrement en Markdown brut. |
-| 🟠 | **Numérotation** — 2.2 et 2.4 n'existent pas ; deux « Tableau 3 » ; les 5 légendes disent « Titre, Lecture » ; les 13 tableaux de la partie III n'ont ni numéro ni légende. |
-| 🟡 | **11 placeholders visibles** — `tttt`, `SOURCE`, `(mettre l'auteur)`, `(…)`, « Phrase de transition » ×2, « nanianninain… », « I don't know » sous Annexes. |
+| 🔴 | **Blocs toujours absents du `.docx`** — le plan d'analyse (§2.2.9, auquel la partie III renvoie deux fois), les trois paragraphes SM/ICL/AE de §2.3.3 (le tableau y est, pas le texte), les deux sous-sections d'audit, l'encadré sur α, et tout le bloc Limites (L.1, L.1 bis, L.2) — alors que la partie III y renvoie et que le document est titré « Résultats, limites et extensions ». La sous-section 3.3.2 de la partie III n'a pas été reportée non plus. |
+| 🟠 | **Markdown non converti — aggravé par le collage.** 538 lignes portent des accents graves (le code inline de la partie III est passé tel quel), 14 `**`, 19 lignes de tableau en tubes, un `M<sub>s</sub>`, un `## 2.5`. Le tableau de validité interne est toujours entièrement en Markdown brut. |
+| 🟠 | **Numérotation** — 2.2 et 2.4 n'existent toujours pas ; deux « Tableau 3 » ; les 5 légendes disent encore « Titre, Lecture » ; les 13 tableaux de la partie III, désormais collés, n'ont ni numéro ni légende. |
+| 🟡 | **Placeholders — partiellement traités.** `SOURCE`, `(mettre l'auteur)` et « I don't know » ont disparu. Restent `tttt`, « Phrase de transition » ×2, « nanianninain… ». |
 | 🟡 | Coquilles récurrentes (« comportemental » pour « comportementale », « sillicus », « Poket de Khun », « Von Neumannen »), page de garde qui tronque la question de recherche, partie III titrée « Résultats, limites et extensions » alors qu'elle ne contient que les résultats. |
 
 **Trois erreurs de chiffres relevées dans la partie III et corrigées** : notes de
@@ -157,4 +163,6 @@ ce qui supprime aussi le test d'effet-machine (sans objet).
 | 2026-08-25 | Documents mis à jour ; chapitre de méthode en version définitive. |
 | 2026-08-25 | **H4 instrumentée** : la règle d'incohérence pré-enregistrée s'avère invalide (47,8 % artefactuels) ; la dégénérescence des mixtes livre le résultat central, avec son contrôle interne. Figures produites. Codage manuel écarté. |
 | 2026-08-25 | **Partie III rédigée** — 3.4 puis 3.6, 3.5, 3.7, 3.1, 3.2, 3.3. Export Word natif (`python-docx`). |
+| 2026-08-26 | Deux incohérences de rédaction corrigées : `partie3-plan.md` disait 41 % là où le chiffre arrêté est 38 % ; dans `partie3.md`, 3.3.2 précédait 3.3.1 — ordre rétabli, renvois internes ajustés. |
+| 2026-08-26 | **Report de la partie III dans le `.docx`** par Léo : 3.1 à 3.7, treize tableaux en tables Word, deux figures ; le document double de volume. Bibliographie amorcée (15 entrées), trois placeholders levés. Modifications non commitées. |
 | 2026-08-26 | **Audit complet du `.docx`** : aucune erreur invalidante, trois chiffres corrigés, la conditionnalité en α énoncée dans les deux chapitres. Le reste de l'audit (bibliographie, renvois, blocs manquants) est traité à la main par Léo. |

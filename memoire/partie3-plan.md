@@ -511,7 +511,7 @@ Aucune n'est bloquante pour commencer à rédiger.
    invalide sur ce corpus. À signaler dans le chapitre, ou à traiter entièrement
    en 3.6.1 avec un renvoi. Voir 3.6.
 3. **§L.1 — le chiffre de 58 %. ✅ Déjà corrigé.** Il agrégeait les trois
-   adversaires ; ramené à 41 % contre GTO.
+   adversaires ; ramené à 38 % contre GTO.
 
 ---
 
