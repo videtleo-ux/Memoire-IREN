@@ -67,26 +67,40 @@ avant tout appel API.
 - ✅ **H1** — l'adaptation vient de la mémoire (effet apparié +0,704 / +0,220 / +0,178 selon l'adversaire, neuf paires sur neuf dans le même sens)
 - ✅ **H2** — elle exploite, elle ne récite pas (référence récitée à +0,778 et +0,110, les maxima théoriques ; contrôle négatif tenu)
 - ✅ **H3** — le mécanisme de rétention compte, mais seulement là où la tâche exige une politique différenciée (+0,038 ± 0,015 contre Station ; indistinguable contre Over-folder)
-- 🔄 **H4** — non instrumentée. Deux mesures automatiques à écrire sur `donnees/` (incohérence raisonnement↔action, dégénérescence des mixtes), plus un codage manuel sur échantillon stratifié
-- ✅ Analyse qualitative du canal mémoire (90 notes intégrales dans `donnees/notes-ae.md`)
-- 🔄 Chapitre de méthode (`memoire/methodologie.md`) et résultats (`memoire/resultats.md`)
+- 🔄 **H4** — les deux mesures automatiques sont écrites (`analyse/h4.py` → `memoire/h4-mesures.md`). Reste le codage manuel sur échantillon stratifié, devenu la seule voie vers un taux d'incohérence défendable (voir ci-dessous)
+- ✅ Analyse qualitative du canal mémoire (90 notes intégrales dans `donnees/notes-ae.md`) — le canal n'encode **jamais** une fréquence : 0 pourcentage, 0 fraction, 0 proportion en toutes lettres sur 90 notes, contre 358 quantificateurs non chiffrés. C'est le mécanisme de la dégénérescence mesurée en H4.
+- ✅ **Partie III rédigée** — `memoire/partie3.md`, sections 3.1 à 3.7. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`.
+- 🔄 Chapitre de méthode (`memoire/methodologie.md`) — trois corrections identifiées, listées dans `partie3-plan.md`
 - ⬜ Rédaction des autres chapitres, préparation de la soutenance
 
-### Ce que H4 demande exactement
+### Où en est H4 — `analyse/h4.py`, rapport dans `memoire/h4-mesures.md`
 
-1. **Incohérence raisonnement↔action**, automatique : comparer l'action de la ligne
-   `ACTION:` à la dernière action nommée dans le texte libre. Mesurable sur
-   **13 466 décisions (49,3 %)** — celles où l'agent écrit au-delà de sa ligne
-   d'action. ⚠️ Biais de sélection à déclarer : 28 % en SM, 36 % en ICL, 64 % en AE.
-2. **Dégénérescence des mixtes**, automatique : concentration de `p` aux bornes.
-   ⚠️ **Ventiler par adversaire** — contre Station et Over-folder la meilleure
-   réponse *est* pure, y être n'est pas un biais. Le signal est contre GTO, où
-   l'équilibre exige du mixte : `J1/C0/ouverture` (attendu 1/3) est aux bornes dans
-   **58 %** des séries.
-3. **Codage manuel** sur échantillon stratifié (150 à 200 décisions suffisent),
-   selon les cinq catégories GTBENCH, pour estimer le taux de faux négatifs de la
-   mesure automatique. Un cas est déjà documenté : l'inversion des rôles dans une
-   note AE, avec stratégie jouée pourtant correcte.
+1. **Incohérence raisonnement↔action** — ✅ mesurée, et **la règle pré-enregistrée
+   est invalide**. « La dernière action nommée dans le texte libre » rend 47,8 %,
+   voisin des 45,1 % de GTBENCH et entièrement artefactuel : le français conclut par
+   une clause contrastive qui nomme l'option *rejetée* (« engager garantit +1,
+   **tandis que retenir** expose à… »). Huit divergences relues, huit faux positifs.
+   La variante à haute précision — ne compter que les décisions où l'agent **énonce**
+   son choix (« il vaut mieux X », « je choisis X ») — donne **0 divergence sur 604**.
+   L'agent ne se contredit jamais explicitement. ⚠️ La chaîne de pensée n'étant pas
+   restituée (§L.1), la mesure ne voit qu'une partie du raisonnement.
+2. **Dégénérescence des mixtes** — ✅ mesurée. Contre GTO, sur `J1/C0/ouverture`
+   (équilibre 1/3) : **0 % des séries aux bornes sans mémoire, 56 % dès qu'une note
+   est écrite**. La mémoire ne l'atténue pas, elle la **produit**. Contrôle interne :
+   la première série d'une exécution AE, jouée avec une note encore vide, n'est pas
+   aux bornes non plus — l'effondrement apparaît exactement quand la note apparaît.
+   Et ce n'est pas un effondrement mais une **alternance** : 13 séries à 0, 1 à 1,
+   7 sauts de plus de 0,40 entre séries consécutives — la randomisation intra-série
+   est remplacée par une alternance inter-séries.
+   ⚠️ Le chiffre de 58 % des notes antérieures agrégeait les trois adversaires : il
+   comptait comme dégénérées des politiques pures optimales contre Station et
+   Over-folder. Contre GTO seul, c'est **38 %**. Corrigé aussi dans
+   `memoire/methodologie.md` §L.1.
+3. **Codage manuel** — ⬜ reste à faire, sur échantillon stratifié (150 à 200
+   décisions), selon les cinq catégories GTBENCH. Ce n'est plus un raffinement : les
+   mesures automatiques ne peuvent établir que l'absence de contradiction *explicite*.
+   Un cas est déjà documenté : l'inversion des rôles dans une note AE, avec stratégie
+   jouée pourtant correcte.
 
 ## ⚠️ Points ouverts
 

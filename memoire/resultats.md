@@ -84,9 +84,16 @@ mémoire, il est *en dessous* de l'équilibre contre Station et contre GTO.
 
 ### 2.3 Le contrôle négatif
 
-Contre GTO, la référence récitée reste négative sur les trente séries : l'agent ne
-gagne jamais plus que l'équilibre face à un adversaire à l'équilibre. C'est la
-propriété qui devait être vérifiée, et elle l'est.
+Contre GTO, sur les **39 séries** jouées (9 SM + 30 AE), la référence récitée n'est
+**jamais positive** et l'écart **jamais négatif** : l'agent ne gagne jamais plus
+que l'équilibre face à un adversaire à l'équilibre. Six séries atteignent
+exactement zéro — l'agent y joue une meilleure réponse à l'équilibre, encaissant
+exactement la valeur du jeu. Aucune ne dépasse. C'est la propriété qui devait être
+vérifiée, et elle l'est.
+
+⚠️ Les deux formulations ne sont pas deux verrous indépendants : contre GTO la
+constante vaut 0, donc `récitée = −écart` (§3.1 de la partie III). Le §2.4 du
+chapitre de méthode les présente comme distinctes — à corriger.
 
 L'écart, lui, **décroît** contre GTO (0,161 → 0,008). Ce n'est pas un artefact de
 mesure : la décroissance est absente en condition SM, sur les mêmes donnes et le
@@ -98,9 +105,8 @@ contrairement aux deux adversaires exploitables.
 > tenait toute décroissance de l'écart contre GTO pour un défaut de mesure
 > invalidant la campagne — critère qui, pris au mot, invalidait des résultats
 > pourtant sains. Le contrôle négatif est désormais énoncé sur l'instrument qui le
-> teste réellement : *la référence récitée ne devient jamais positive contre GTO, et
-> l'écart n'y devient jamais négatif* (§2.2.2 et §2.4 du chapitre). Les deux
-> tiennent sur les trente séries jouées.
+> teste réellement : *la référence récitée ne devient jamais positive contre GTO*
+> (§2.2.2 et §2.4 du chapitre). Cela tient sur les 39 séries jouées.
 
 ### 2.4 Le mécanisme de rétention — H3
 
@@ -138,10 +144,32 @@ différence.
 **Le mécanisme observé n'est pas celui qui était anticipé.** Le chapitre prévoyait
 pour ICL un profil d'oubli en dents de scie, produit par l'éviction des séries
 anciennes à la saturation de la fenêtre. Rien de tel n'apparaît : la fenêtre ne
-produit aucun décrochage franc. ICL **rampe** — une descente lente, bruitée, étalée
-sur dix séries, qui ne verrouille jamais zéro — là où AE fait une **marche unique
-et immédiate**, dès la première réflexion, et n'en bouge plus. La différence porte
-donc sur la vitesse et la complétude de l'adaptation, non sur sa rétention.
+produit aucun décrochage.
+
+La vitesse ne les sépare pas non plus. **Les deux conditions chutent à la première
+frontière**, dans les mêmes proportions (contre Station : 0,202 → 0,059 pour ICL,
+0,226 → 0,000 pour AE). Ce qui les sépare est ce qui suit : AE **se verrouille sur
+zéro** et l'y tient sur neuf séries, tandis qu'ICL **s'arrête à un résidu non nul**
+— stagnation autour de 0,058, puis dérive lente et bruitée vers 0,040, sans jamais
+atteindre zéro sur une seule des trente séries jouées.
+
+La différence porte donc sur la **complétude** de ce qui est extrait, ni sur la
+vitesse ni sur la rétention. Le détail par ensemble d'information le confirme :
+contre Station, huit des douze info-sets sont des points d'indifférence exacts, et
+la qualité de la politique ne se joue que sur quatre décisions — ne jamais bluffer
+le sceau faible, toujours engager le sceau fort. Après dix séries, ICL bluffe
+encore le sceau faible dans 7 à 9 % des cas et laisse passer 3 à 6 % de ses mises
+de valeur ; AE a supprimé le second défaut entièrement et ramené le premier sous
+le pour cent. Le résidu d'ICL se décompose en 64 % de bluffs résiduels et 36 % de
+mises de valeur manquées.
+
+L'explication tient à la forme de la politique optimale. Contre Over-folder, elle
+tient en **une règle unique et positive** — engager quel que soit le sceau — que le
+journal brut porte de façon transparente. Contre Station, elle demande **deux
+règles, dont une négative**, et une distinction entre les sceaux. Cesser de faire
+quelque chose est ce qu'un historique brut soutient mal : un bluff perdant y figure
+comme une manche parmi cent cinquante, et rien ne rassemble ces occurrences en
+interdiction. L'étape de synthèse fait précisément cela.
 
 Une remarque de méthode : la dispersion inter-réplications des paires ICL−AE
 (0,0059 sur Station) est **deux fois et demie plus faible** que celle des paires
@@ -153,27 +181,105 @@ dimensionnement le donnait pour tout juste adéquat (§2.2.7 du chapitre).
 
 ### 2.5 Le canal mémoire
 
-Les notes tiennent en **une seule entrée**, de 377 à 1 561 caractères : jamais de
-saturation, jamais d'élagage destructeur sur les 90 frontières. Leur longueur suit
-la difficulté du problème — 380 caractères contre Over-folder, où il n'y a qu'une
-régularité à énoncer ; 1 500 contre GTO, où il faut détailler carte par carte.
+Les notes tiennent en **une seule entrée** dans 84 cas sur 90 (deux dans les six
+autres), de 333 à 1 906 caractères : **aucun dépassement**, deux élagages sur les
+90 frontières. La contrainte de capacité n'a jamais mordu. Leur longueur suit la
+difficulté du problème — 470 caractères en moyenne contre Over-folder, où il n'y a
+qu'une régularité à énoncer ; 808 contre Station ; 1 337 contre GTO, où il faut
+détailler sceau par sceau.
 
 > « Il n'a jamais engagé ni couvert. Ouvrant, il a toujours retenu ; Répondant, il
 > s'est toujours retiré face à notre engagement. Nos 150 engagements ont donc tous
 > rapporté +1, sans coût ni révélation des sceaux. »
 > — *AE-over-folder-r2, frontière de la série 9, écart 0,000*
 
-Deux imperfections, matière directe pour H4 :
+**Le canal n'encode jamais une fréquence — et c'est le mécanisme de H4.** Sur les
+90 notes et leurs 92 000 caractères : **0** pourcentage, **0** fraction écrite,
+**0** proportion en toutes lettres (« un tiers », « une fois sur trois »), contre
+**358** quantificateurs non chiffrés. Le mot « aléatoire » apparaît 4 fois, jamais
+à propos de la stratégie de l'agent.
 
-- **Inversion des rôles.** Un run sur trois contre Over-folder décrit l'adversaire
-  comme ayant « toujours engagé », alors que le bot n'a jamais misé (795 `check`,
-  1 400 `fold`, zéro `bet` dans les journaux) — tout en jouant la stratégie
-  optimale. Le comportement est juste, son explication est fausse.
-- **Écrasement plutôt qu'accumulation.** L'agent traite systématiquement sa note
-  antérieure comme une erreur à corriger (« remplace l'ancien −13 ») et non comme
-  le résultat d'une série passée.
+L'agent perçoit pourtant bien la différence entre un adversaire déterministe et un
+adversaire mixte — son vocabulaire l'enregistre :
+
+| Adversaire | Quantificateurs | Dont catégoriques (*toujours*, *jamais*, *systématiquement*) |
+|---|---|---|
+| Over-folder | 98 | **100 %** |
+| Station | 94 | **100 %** |
+| GTO | 166 | **17 %** |
+
+Face à GTO il bascule vers un registre gradué (« très souvent », « parfois »). La
+détection est acquise ; c'est l'encodage qui manque. Et un adverbe gradué ne
+s'exécute pas comme une fréquence : la note tranche catégoriquement — « *éviter
+d'engager avec Tor* », là où l'équilibre demande de le faire une fois sur trois.
+
+**Deux imperfections, matière directe pour H4 :**
+
+- **Inversion des rôles.** Une note sur les 30 écrites contre Over-folder décrit
+  l'adversaire comme ayant « toujours engagé », alors que le bot n'a pas misé une
+  seule fois (2 250 retenues en position d'Ouvrant, zéro engagement sur les
+  4 500 manches AE) — tout en jouant la meilleure réponse exacte, écart 0,000. Le
+  comportement est juste, son explication est fausse. Cette incohérence-là est
+  **invisible à la mesure de H4**, qui compare le texte d'une décision à l'action
+  de cette même décision, jamais la mémoire aux journaux.
+- **Écrasement plutôt qu'accumulation.** 70 frontières sur 90 comportent une
+  suppression. L'agent traite sa note antérieure comme une erreur à corriger
+  (« remplace l'ancien −13 », puis « remplace l'ancien +5 ») et non comme le
+  résultat d'une série passée. Il tient un état, pas un registre — ce qui suffit
+  contre un adversaire stationnaire, et expliquerait mal une tâche non
+  stationnaire.
 
 Les 90 notes intégrales : `donnees/notes-ae.md`.
+
+### 2.6 Les biais de décision — H4
+
+Les deux mesures automatiques sont calculées ; le détail complet et sa
+justification sont dans `memoire/h4-mesures.md`, régénérable par `analyse/h4.py`.
+
+**Incohérence raisonnement↔action — la règle pré-enregistrée est invalide.**
+Appliquée à la lettre (§2.2.5.3, « la dernière action nommée dans le texte
+libre »), elle rend 47,8 % sur 13 442 décisions verbalisées — à un point des
+45,1 % de GTBENCH, et entièrement artefactuel : le raisonnement français conclut
+par une clause contrastive qui nomme l'option *rejetée* (« engager garantit +1,
+**tandis que retenir** expose à une perte »). Huit divergences relues, huit faux
+positifs. La variante à haute précision — ne compter que les décisions où l'agent
+*énonce* son choix — donne **0 divergence sur 604**. L'agent ne se contredit
+jamais explicitement. La chaîne de pensée n'étant pas restituée (§L.1), la mesure
+ne voit qu'une partie du raisonnement.
+
+**Dégénérescence des mixtes — la mémoire la produit.** Sur `J1/C0/ouverture`, où
+l'équilibre exige un bluff au tiers, contre l'adversaire à l'équilibre (fréquences
+estimées sur au moins 20 observations) :
+
+| | Séries | Aux bornes 0 ou 1 | Distance moyenne à 1/3 |
+|---|---|---|---|
+| SM — sans mémoire | 9 | **0 %** | 0,078 |
+| AE — première série, note encore vide | 3 | **0 %** | 0,113 |
+| AE — séries suivantes, note écrite | 25 | **56 %** | 0,323 |
+
+La deuxième ligne est un **contrôle interne** : la première série d'une exécution
+AE se joue avec un emplacement mémoire présent mais vide — même modèle, même
+gabarit, même exécution, même adversaire, seule la note manque. L'effondrement
+apparaît exactement à la première série jouée avec une note écrite.
+
+Et ce n'est pas un effondrement vers une borne unique : 13 séries à zéro, 1 à un,
+**7 sauts de plus de 0,40** entre séries consécutives. L'agent remplace une
+randomisation *intra-série* par une alternance *inter-séries* — il choisit une
+règle, l'applique 150 manches, puis en change à la frontière. La variabilité a
+migré vers une échelle de temps où elle ne produit aucune imprévisibilité.
+
+**L'adaptation et le biais sont le même mécanisme.** Ce qui rend AE supérieure à
+ICL (§2.4) — contraindre l'agent à formuler une règle — est ce qui la rend
+incapable de randomiser. Une règle écrite est déterministe : elle dit « engager
+avec le sceau fort », jamais « engager avec le sceau faible une fois sur trois ».
+
+Deux réserves : le résultat repose sur un seul info-set (les trois autres info-sets
+mixtes ne sont atteints que si l'adversaire mise — 1, 2 et 6 séries à effectif
+suffisant), et le codage manuel sur échantillon stratifié n'a pas été conduit.
+
+⚠️ Le chiffre de 58 % qui circulait dans les notes de travail agrégeait les trois
+adversaires — il comptait comme dégénérées des politiques pures qui sont optimales
+contre Station et Over-folder. Contre GTO seul, c'est **38 %**.
 
 ## 3. Contrôles de validité
 
@@ -255,6 +361,10 @@ moment par `python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv`.
 |---|---|
 | `memoire/methodologie.md` | **Chapitre 2 du mémoire** : hypothèses, protocole, instruments, validité interne. Autorité sur ce qui est mesuré et pourquoi. |
 | `memoire/resultats.md` | Ce document. |
+| `memoire/partie3.md` | **Partie III du mémoire**, rédigée : sections 3.1 à 3.7. |
+| `memoire/partie3-plan.md` | Plan de rédaction de la partie III : sept sections, chacune avec son objectif, ses paragraphes, ses pièces et ses précautions. |
+| `memoire/h4-mesures.md` | **Les deux mesures automatiques de H4**, générées par `analyse/h4.py` : incohérence raisonnement↔action (et l'invalidité de la règle pré-enregistrée), dégénérescence des mixtes. |
+| `memoire/figures/` | Les deux figures de la partie III, générées par `analyse/figures.py`. |
 | `donnees/notes-ae.md` | Les 90 notes de l'agent, données qualitatives brutes. |
 | `spec-build-arene-kuhn(1).md` | Spécification d'origine — autorité sur *quoi* construire. |
 | `prd/00-vue-densemble.md` … `prd/04-logging-analyse.md` | Conception — autorité sur *comment*. Décisions transverses D1–D8, oracle analytique, schémas. |
@@ -288,16 +398,15 @@ identique, la campagne rejoue les mêmes cartes, manche pour manche.
 
 ## 8. Suite
 
-La collecte est close : H1, H2 et H3 sont établies, et aucune exécution
-supplémentaire n'est requise pour les soutenir. Restent trois travaux d'analyse,
-tous conduisibles sur les données déjà déposées.
+La collecte est close : les quatre hypothèses sont établies, et aucune exécution
+supplémentaire n'est requise pour les soutenir. Restent trois travaux, tous
+conduisibles sur les données déjà déposées.
 
-1. **H4 — l'axe *homo silicus*, seule hypothèse non encore instrumentée.** Le taux
-   d'incohérence raisonnement↔action se code sur `decisions.csv`, dont la colonne
-   `sortie_brute` porte le texte intégral produit par le modèle ; l'inversion des
-   rôles relevée en §2.5 en est un premier cas documenté. La dégénérescence des
-   stratégies mixtes se lit dans `infosets.csv`, par la concentration de `p` aux
-   bornes 0 et 1.
+1. **La rédaction de la partie III.** Les quatre hypothèses sont instrumentées,
+   H4 comprise (§2.6). Le plan de rédaction section par section est dans
+   `memoire/partie3-plan.md`. Reste, sur H4, le codage manuel sur échantillon
+   stratifié — écarté du périmètre : il précise le taux d'incohérence, il ne
+   change aucun résultat acquis.
 2. **La vitesse d'adaptation**, qui est ce qui sépare AE d'ICL (§2.4) et que le
    plan actuel résout mal : le plateau AE est atteint dès la deuxième série. Des
    séries plus courtes la mesureraient mieux, à coût comparable.
