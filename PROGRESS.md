@@ -1,13 +1,13 @@
 # PROGRESS.md — Suivi d'avancement
 
-Dernière mise à jour : 2026-08-25. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ attention.
+Dernière mise à jour : 2026-08-26. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ attention.
 
-> **Pages en ligne** : [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) · [résultats](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b) — régénérables par `analyse/rendre-*.py`.
+> **Pages en ligne** : [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) · [résultats](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b) · [plan de la partie III](https://claude.ai/code/artifact/79b11edd-7000-4027-a905-c296ee7bdadf) — les deux premières régénérables par `analyse/rendre-*.py`.
 >
-> **La collecte est close.** Les phases 0 à 4 sont terminées : le dispositif est
-> construit, calibré, audité, et la campagne a produit ses données. Ce qui reste
-> est de l'analyse sur données acquises et de la rédaction. Résultats et
-> inventaire des données : `memoire/resultats.md`.
+> **La collecte est close et l'analyse est terminée.** Les quatre hypothèses sont
+> instrumentées et la partie III est rédigée. Ce qui reste est de la rédaction sur
+> les autres chapitres et de la mise en forme. Résultats et inventaire des données :
+> `memoire/resultats.md`.
 
 ## Phase 0 — Cadrage (✅ 2026-08-19)
 
@@ -62,16 +62,22 @@ session par réutilisation d'un jeton à usage unique (magasin de jetons partag�
 piège n°11) ; erreur de passage de paramètres au lanceur, interceptée par le CLI
 avant tout appel API.
 
-## Phase 5 — Analyse & mémoire (🔄 en cours)
+## Phase 5 — Analyse (✅ 2026-08-26)
 
 - ✅ **H1** — l'adaptation vient de la mémoire (effet apparié +0,704 / +0,220 / +0,178 selon l'adversaire, neuf paires sur neuf dans le même sens)
-- ✅ **H2** — elle exploite, elle ne récite pas (référence récitée à +0,778 et +0,110, les maxima théoriques ; contrôle négatif tenu)
-- ✅ **H3** — le mécanisme de rétention compte, mais seulement là où la tâche exige une politique différenciée (+0,038 ± 0,015 contre Station ; indistinguable contre Over-folder)
-- 🔄 **H4** — les deux mesures automatiques sont écrites (`analyse/h4.py` → `memoire/h4-mesures.md`). Reste le codage manuel sur échantillon stratifié, devenu la seule voie vers un taux d'incohérence défendable (voir ci-dessous)
+- ✅ **H2** — elle exploite, elle ne récite pas (référence récitée à +0,778 et +0,110, les maxima théoriques ; contrôle négatif tenu sur 39 séries)
+- ✅ **H3** — le mécanisme de rétention compte, mais seulement là où la tâche exige une politique différenciée (+0,038 ± 0,015 contre Station ; indistinguable contre Over-folder). **Ce n'est ni la vitesse ni l'oubli qui les sépare, mais la complétude** : les deux conditions chutent à la première frontière, AE se verrouille sur zéro, ICL s'arrête à un résidu qu'il n'annule jamais.
+- ✅ **H4** — les deux mesures automatiques sont écrites (`analyse/h4.py` → `memoire/h4-mesures.md`). Le codage manuel est **écarté du périmètre** (décision du 2026-08-25) : il précise le taux d'incohérence, il ne change aucun résultat acquis.
 - ✅ Analyse qualitative du canal mémoire (90 notes intégrales dans `donnees/notes-ae.md`) — le canal n'encode **jamais** une fréquence : 0 pourcentage, 0 fraction, 0 proportion en toutes lettres sur 90 notes, contre 358 quantificateurs non chiffrés. C'est le mécanisme de la dégénérescence mesurée en H4.
-- ✅ **Partie III rédigée** — `memoire/partie3.md`, sections 3.1 à 3.7. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`.
-- 🔄 Chapitre de méthode (`memoire/methodologie.md`) — trois corrections identifiées, listées dans `partie3-plan.md`
-- ⬜ Rédaction des autres chapitres, préparation de la soutenance
+- ✅ **Conditionnalité en α énoncée** — l'équilibre de Kuhn est une famille à un paramètre ; le protocole en retient un membre (α = 1/3) sans l'avoir jamais dit. Vérifié : l'écart d'exploitation est α-libre, donc H1, H3 et l'énoncé central de H2 le sont aussi ; seule l'échelle de la référence récitée en dépend. Une phrase a dû être nuancée (« sans mémoire, l'agent est en dessous de l'équilibre » vaut à α = 1/3 ; à α = 0 il y serait exactement). Encadré ajouté au §2.2.2, sous-section 3.3.2 ajoutée à la partie III.
+
+## Phase 6 — Rédaction du mémoire (🔄 en cours)
+
+- ✅ **Partie III rédigée** — `memoire/partie3.md`, sections 3.1 à 3.7, ~7 900 mots. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`, export Word par `analyse/rendre-partie3-docx.py` → `memoire/partie3.docx`.
+- ✅ **Chapitre de méthode** — quatre corrections appliquées (§2.4 contrôle négatif énoncé comme un seul test ; §2.2.5.3 règle d'incohérence signalée invalide ; §2.2.3 SM n'est plus « le niveau récité » ; §2.2.9 point 2 du plan d'analyse). Plus l'encadré sur α.
+- 🔄 **Report dans le `.docx`** — la partie III est prête à coller ; deux corrections du chapitre 2 restent à porter à la main (liste au bas de `memoire/partie3-plan.md`).
+- ⬜ **Ce que l'audit du 2026-08-26 a relevé dans le `.docx`** — voir ci-dessous.
+- ⬜ Rédaction des parties 1 et 4, préparation de la soutenance
 
 ### Où en est H4 — `analyse/h4.py`, rapport dans `memoire/h4-mesures.md`
 
@@ -96,11 +102,33 @@ avant tout appel API.
    comptait comme dégénérées des politiques pures optimales contre Station et
    Over-folder. Contre GTO seul, c'est **38 %**. Corrigé aussi dans
    `memoire/methodologie.md` §L.1.
-3. **Codage manuel** — ⬜ reste à faire, sur échantillon stratifié (150 à 200
-   décisions), selon les cinq catégories GTBENCH. Ce n'est plus un raffinement : les
-   mesures automatiques ne peuvent établir que l'absence de contradiction *explicite*.
-   Un cas est déjà documenté : l'inversion des rôles dans une note AE, avec stratégie
-   jouée pourtant correcte.
+3. **Codage manuel** — ❌ **écarté du périmètre** (2026-08-25). Il aurait précisé le
+   taux d'incohérence sur les 97,8 % de décisions que la variante à haute précision
+   ne couvre pas ; il ne change aucun résultat acquis. Limite assumée et rapportée
+   comme telle en §3.6.1 et §3.6.3.
+
+## Audit du document du 2026-08-26 — ce qui reste à faire à la main
+
+Le `.docx` complet a été relu et chaque chiffre recoupé contre `donnees/`.
+**Aucune erreur n'invalide un résultat** : les mesures tiennent, les tableaux de
+dimensionnement sont exacts, les effets appariés sont justes. Ce qui suit est de la
+rédaction et de la mise en forme, à la charge de Léo.
+
+| Priorité | Constat |
+|---|---|
+| 🔴 | **17 références citées absentes de la bibliographie** — dont Borel 1938, Von Neumann 1928, Ferguson 2004, Reiley 2005/2008, Gao 2025, Wang 2023a (VOYAGER), Packer 2024 (MEMO), Guan 2024 (Richelieu). Et 6 références jamais citées. Deux systèmes de citation coexistent ; Loriente & Diez est un placeholder ; ~15 marqueurs `[188]`, `[305, 373]` d'un autre système traînent. |
+| 🔴 | **Tous les renvois croisés du chapitre 2 pointent dans le vide** — le document numérote 2.1 / 2.3.x / 2.5, le texte renvoie à §2.2.x. Idem §1.5.4 et §L.1. |
+| 🔴 | **Quatre blocs du chapitre 2 absents du `.docx`** — le plan d'analyse (§2.2.9, auquel la partie III renvoie), les trois paragraphes SM/ICL/AE de §2.2.3, les deux sous-sections d'audit de §2.4, et tout le bloc Limites (L.1, L.1 bis, L.2). |
+| 🟠 | **Markdown non converti** — 39 `**`, 41 accents graves, 22 lignes de tableau en tubes, un `M<sub>s</sub>`, un `## 2.5`. Le tableau de validité interne est entièrement en Markdown brut. |
+| 🟠 | **Numérotation** — 2.2 et 2.4 n'existent pas ; deux « Tableau 3 » ; les 5 légendes disent « Titre, Lecture » ; les 13 tableaux de la partie III n'ont ni numéro ni légende. |
+| 🟡 | **11 placeholders visibles** — `tttt`, `SOURCE`, `(mettre l'auteur)`, `(…)`, « Phrase de transition » ×2, « nanianninain… », « I don't know » sous Annexes. |
+| 🟡 | Coquilles récurrentes (« comportemental » pour « comportementale », « sillicus », « Poket de Khun », « Von Neumannen »), page de garde qui tronque la question de recherche, partie III titrée « Résultats, limites et extensions » alors qu'elle ne contient que les résultats. |
+
+**Trois erreurs de chiffres relevées dans la partie III et corrigées** : notes de
+333 à 1 906 caractères (et non 377 à 1 561, qui contredisait §3.5.1) ; cent
+cinquante engagements par série (et non trois cents, vérifié sur
+`decisions.csv`) ; contrôle négatif sur trente-neuf séries (et non trente, qui
+contredisait §3.3.1).
 
 ## ⚠️ Points ouverts
 
@@ -127,3 +155,6 @@ ce qui supprime aussi le test d'effet-machine (sans objet).
 | 2026-08-23 | Piège n°11 (jetons à usage unique) trouvé et corrigé avant qu'il ne casse la tranche ICL. |
 | 2026-08-24 | **Tranche ICL** : 6 exécutions. H3 établie, sous condition. Collecte close. |
 | 2026-08-25 | Documents mis à jour ; chapitre de méthode en version définitive. |
+| 2026-08-25 | **H4 instrumentée** : la règle d'incohérence pré-enregistrée s'avère invalide (47,8 % artefactuels) ; la dégénérescence des mixtes livre le résultat central, avec son contrôle interne. Figures produites. Codage manuel écarté. |
+| 2026-08-25 | **Partie III rédigée** — 3.4 puis 3.6, 3.5, 3.7, 3.1, 3.2, 3.3. Export Word natif (`python-docx`). |
+| 2026-08-26 | **Audit complet du `.docx`** : aucune erreur invalidante, trois chiffres corrigés, la conditionnalité en α énoncée dans les deux chapitres. Le reste de l'audit (bibliographie, renvois, blocs manquants) est traité à la main par Léo. |
