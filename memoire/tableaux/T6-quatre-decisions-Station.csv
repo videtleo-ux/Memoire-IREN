@@ -1,0 +1,5 @@
+﻿"jeton","position","frequence_AE","frequence_ICL","manches_AE","manches_ICL"
+"faible (doit tomber à 0)","1re à parler",0.0065,0.0645,310,310
+"faible (doit tomber à 0)","2de à parler",0.0091,0.0909,330,330
+"fort (doit monter à 1)","1re à parler",1,0.9733,300,300
+"fort (doit monter à 1)","2de à parler",1,0.941,288,288

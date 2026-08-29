@@ -21,24 +21,44 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Pt
 
 RACINE = Path(__file__).resolve().parent.parent
-SOURCE = RACINE / "memoire" / "partie3.md"
 FIGURES = RACINE / "memoire" / "figures"
-SORTIE = RACINE / "memoire" / "partie3.docx"
+
+#: Le fichier source se donne en argument ; par défaut, la version en vigueur.
+#: Le .docx porte le meme nom que le .md.
+import sys
+
+SOURCE = Path(sys.argv[1]) if len(sys.argv) > 1 else RACINE / "memoire" / "partie3-v2.md"
+if not SOURCE.is_absolute():
+    SOURCE = RACINE / SOURCE
+SORTIE = SOURCE.with_suffix(".docx")
 
 #: Largeur utile d'une page A4 (21 cm) avec des marges de 2,5 cm.
 LARGEUR_FIGURE = Cm(16)
 
 LEGENDES = {
-    "fig1-trajectoires.png": (
-        "Figure 1 — Trajectoires d'adaptation : écart d'exploitation par série"
-    ),
-    "fig2-recitation.png": (
-        "Figure 2 — Récitation ou exploitation : distance au comportement d'équilibre"
-    ),
+    "fig1-trajectoires.png":
+        "Figure 1 — Trajectoires d'adaptation : écart d'exploitation par série",
+    "fig2-asymetrie.png":
+        "Figure 2 — Fréquence d'engagement avec le sceau faible, selon l'adversaire",
+    "fig3-recitee.png":
+        "Figure 3 — Référence récitée par série, avec le plafond théorique",
+    "fig4-zoom.png":
+        "Figure 4 — Après la première frontière : échelle resserrée",
+    "fig5-degenerescence.png":
+        "Figure 5 — Fréquence d'engagement au sceau faible contre l'adversaire à l'équilibre",
+    # Ancienne figure de la version 1, conservée pour que `partie3.md` rende encore.
+    "fig2-recitation.png":
+        "Figure 2 — Récitation ou exploitation : distance au comportement d'équilibre",
 }
 
 APPEL_FIGURE = re.compile(
     r"^\*\*Figure \d[^\n]*?\*\*\s*\*\(`memoire/figures/([^`]+)`\)\*\s*$"
+)
+
+#: Legende de tableau. Le groupe 1 est le libelle ; le chemin du CSV est une
+#: note de production et n'a pas a partir dans le memoire.
+LEGENDE_TABLEAU = re.compile(
+    r"^\*\*(Tableau [^*]+?)\*\*\s*\*\(`memoire/tableaux/[^`]+`\)\*\s*$"
 )
 
 #: Découpe une ligne en fragments formatés. L'ordre compte : le gras avant
@@ -139,6 +159,15 @@ def convertir(texte: str) -> Document:
             i += 1
             continue
 
+        legende_tableau = LEGENDE_TABLEAU.match(nu)
+        if legende_tableau:
+            p = doc.add_paragraph()
+            run = p.add_run(legende_tableau.group(1))
+            run.bold = True
+            run.font.size = Pt(9)
+            i += 1
+            continue
+
         if nu.startswith("#"):
             niveau = len(nu) - len(nu.lstrip("#"))
             doc.add_heading(nu.lstrip("#").strip(), level=min(niveau, 4))
@@ -193,8 +222,19 @@ def main() -> None:
     doc.save(SORTIE)
     tableaux = len(doc.tables)
     titres = sum(1 for p in doc.paragraphs if p.style.name.startswith("Heading"))
-    print(f"écrit : {SORTIE.relative_to(RACINE)}")
-    print(f"  {titres} titres · {tableaux} tableaux · {len(LEGENDES)} figures")
+    figures = sum(len(p.runs and p._p.findall(".//{*}drawing")) for p in doc.paragraphs)
+    mots = sum(len(p.text.split()) for p in doc.paragraphs)
+    def court(chemin: Path) -> str:
+        """Chemin relatif au dépôt s'il en fait partie, absolu sinon."""
+        try:
+            return str(chemin.relative_to(RACINE))
+        except ValueError:
+            return str(chemin)
+
+    print(f"écrit : {court(SORTIE)}")
+    print(f"  source  : {court(SOURCE)}")
+    print(f"  {titres} titres · {tableaux} tableaux · {figures} figures · "
+          f"{mots} mots · {len(doc.paragraphs)} paragraphes")
 
 
 if __name__ == "__main__":

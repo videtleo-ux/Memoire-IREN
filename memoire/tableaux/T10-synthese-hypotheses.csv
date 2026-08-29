@@ -1,0 +1,5 @@
+﻿"hypothese","refutation_aurait_ete","observe","limite"
+"H1 — l'adaptation vient de la mémoire","AE ne se distingue pas de SM","réduction de 0.178 à 0.704 de l'écart selon l'adversaire, 9 paires sur 9","le plateau est atteint dès la série 2 : on mesure la persistance, pas la vitesse"
+"H2 — elle exploite, elle ne récite pas","l'écart ne descend que contre un seul adversaire, ou la récitée devient positive contre GTO","100 % et 99 % du maximum théorique d'exploitation atteints ; récitée jamais positive sur 39 séries contre GTO","l'échelle de la récitée dépend du choix alpha = 1/3 ; l'écart, non"
+"H3 — le mécanisme de rétention compte","ICL égale ou surpasse AE","AE l'emporte contre Station (+0.0381, IC ±0.0148) ; indistinguable contre Over-folder","GTO n'est pas joué en ICL ; le profil d'oubli attendu n'a pas été observé"
+"H4 — des biais de décision persistent","les fréquences se stabilisent aux valeurs mixtes","56 % des séries aux bornes une fois la note écrite, contre 0 % sans mémoire et 0 % note vide","un seul ensemble d'information ; contrôle interne sur 3 séries"

@@ -1,0 +1,11 @@
+# Conclusion du chapitre 1 — à coller dans le `.docx` après le paragraphe 338
+
+Titre de section suggéré (il est annoncé dans le sommaire, paragraphe 105) :
+
+## Le positionnement de la recherche
+
+Quatre enseignements ressortent de ce qui précède. L'économie expérimentale a fourni le protocole qui permet de mesurer un comportement contre une norme théorique plutôt que de le décrire, et la scission tripartite de la rationalité a montré que l'optimalité dépend du cadre retenu pour la juger. Le Machine Behaviour et l'homo silicus ont transposé ce protocole aux modèles de langage, en laissant ouvert le choix entre simuler l'humain et observer une entité artificielle pour elle-même. Les évaluations stratégiques existantes établissent ensuite que les LLM tiennent la comparaison dans les jeux à information imparfaite, sans permettre de dire pourquoi : elles sont statiques, elles observent des donnes indépendantes, et elles ne distinguent pas une stratégie construite d'une règle récitée. Enfin, le gradient de persistance et les architectures de mémoire auto-rédigée offrent le mécanisme qui manque à ces évaluations, mais ils ont été validés dans des environnements dépourvus d'intention adverse.
+
+Le manque se situe à l'intersection de ces quatre littératures. Aucun de ces travaux ne place un agent doté d'une mémoire persistante auto-rédigée face à un adversaire dont la déviation doit être découverte puis punie, sur une durée assez longue pour qu'une exploitation s'installe. Et aucun ne sépare les trois dimensions qui viennent d'être distinguées : un agent qui gagne peut le faire parce qu'il commet moins d'erreurs, parce qu'il récite l'équilibre, ou parce qu'il exploite. Ces trois cas n'ont pas les mêmes implications économiques, et une mesure de performance seule les confond.
+
+C'est ce que la présente recherche se propose de trancher. Dans un environnement stratégique à information imparfaite, un agent LLM autonome équipé d'une mémoire persistante développe-t-il une adaptation comportementale s'apparentant à une stratégie ? Et si oui, cette adaptation le rapproche-t-elle de l'optimalité de l'homo œconomicus, ou reproduit-elle les biais comportementaux humains ? Le chapitre suivant traduit ces deux branches en hypothèses mesurables et décrit le dispositif construit pour y répondre.
