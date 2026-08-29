@@ -15,7 +15,7 @@ Dernière mise à jour : 2026-08-26. Convention : ✅ fait · 🔄 en cours · �
 - ✅ Spec analysée, questionnaire de cadrage, périmètre arrêté
 - ✅ Audit d'environnement : Hermes Agent identifié et inspecté (mémoire native, `hermes -z`, pièges de persistance, d'isolation, OneDrive)
 - ✅ Équilibre de Kuhn re-dérivé à la main ; constante contestée tranchée (couverture J1-Vael = 2/3 à α = 1/3)
-- ✅ Décisions transverses D1–D8 figées · `CONTEXT.md` créé
+- ✅ Décisions transverses D1–D8 figées · `docs/CONTEXT.md` créé
 
 ## Phase 1 — PRD (✅ 2026-08-19)
 
@@ -42,7 +42,7 @@ Dernière mise à jour : 2026-08-26. Convention : ✅ fait · 🔄 en cours · �
 
 Conduit **avant** la campagne, sur un dispositif réputé terminé. Quatre constats,
 tous à la frontière avec l'outillage tiers, aucun dans le code du dépôt, aucun
-détecté par les tests, aucun visible dans les journaux (`AUDIT.md`, `CONTEXT.md` §4 sexies) :
+détecté par les tests, aucun visible dans les journaux (`docs/AUDIT.md`, `docs/CONTEXT.md` §4 sexies) :
 
 - ✅ **C1** — le chemin du magasin, servi à l'agent par le prompt système, nommait son adversaire → répertoires d'exécution en code opaque
 - ✅ **C2** — le prompt ICL à fenêtre pleine dépasse la ligne de commande Windows → transmission par fichier, sans toucher aux paramètres expérimentaux
@@ -74,7 +74,7 @@ avant tout appel API.
 
 ## Phase 6 — Rédaction du mémoire (🔄 en cours)
 
-- ✅ **Partie III rédigée** — `memoire/partie3.md`, sections 3.1 à 3.7, ~7 900 mots. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`, export Word par `analyse/rendre-partie3-docx.py` → `memoire/partie3.docx`.
+- ✅ **Partie III rédigée** — `memoire/partie3-v2.md`, sections 3.1 à 3.7, ~7 900 mots. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`, export Word par `analyse/rendre-partie3-docx.py` → `memoire/partie3.docx`.
 - ✅ **Chapitre de méthode** — quatre corrections appliquées (§2.4 contrôle négatif énoncé comme un seul test ; §2.2.5.3 règle d'incohérence signalée invalide ; §2.2.3 SM n'est plus « le niveau récité » ; §2.2.9 point 2 du plan d'analyse). Plus l'encadré sur α.
 - ✅ **Partie III reportée dans le `.docx`** (2026-08-26, à la main) — sections 3.1 à 3.7 collées, les treize tableaux convertis en vraies tables Word, les deux figures insérées. Le document passe de 269 à 538 paragraphes et de 251 Ko à 766 Ko. Le chapitre 2 y est désormais complet jusqu'à la validité interne.
 - 🔄 **Ce qu'il reste à porter dans le `.docx`** — la sous-section 3.3.2 (conditionnalité en α) et les deux corrections du chapitre 2 listées au bas de `memoire/partie3-plan.md` ; plus l'audit ci-dessous.

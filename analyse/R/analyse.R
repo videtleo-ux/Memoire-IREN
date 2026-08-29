@@ -4,7 +4,7 @@
 #
 #   Rscript analyse/R/analyse.R
 #
-# Sorties : les tableaux dans la console, les figures dans analyse/R/figures/.
+# Sorties : les tableaux dans memoire/tableaux/, les figures dans memoire/figures/.
 #
 # CE QUE FAIT CE SCRIPT, DANS L'ORDRE :
 #   §1  charge les 27 290 décisions
@@ -32,7 +32,7 @@ if (!file.exists("donnees/decisions.csv")) {
 }
 source("analyse/R/moteur.R")
 
-SORTIE <- "analyse/R/figures"
+SORTIE <- "memoire/figures"
 dir.create(SORTIE, showWarnings = FALSE, recursive = TRUE)
 
 titre <- function(x) cat("\n\n", strrep("=", 78), "\n", x, "\n", strrep("=", 78), "\n\n", sep = "")

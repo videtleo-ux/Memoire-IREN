@@ -144,10 +144,10 @@ Trois propriétés dont la violation serait invisible :
 
 | | |
 |---|---|
-| Spécification (autorité sur le *quoi*) | `spec-build-arene-kuhn(1).md` |
+| Spécification (autorité sur le *quoi*) | `docs/spec-build-arene-kuhn.md` |
 | Conception (autorité sur le *comment*) | `prd/00` à `prd/04` |
-| **Contexte vivant, pièges connus** | **`CONTEXT.md` — à lire en premier** |
-| État d'avancement | `PROGRESS.md` |
+| **Contexte vivant, pièges connus** | **`docs/CONTEXT.md` — à lire en premier** |
+| État d'avancement | `docs/PROGRESS.md` |
 | Chapitre de méthode du mémoire | `memoire/methodologie.md` |
 | Journaux d'exécutions réelles | `C:\arene-runs-k200`, `-luna`, `-icl`, `-ae`, `-medium` |
 
@@ -164,7 +164,7 @@ d'effort de raisonnement et n'est donc pas représentatif du modèle de campagne
   français, documenté sur le *pourquoi*, et ce n'est pas le risque.
 - Des tests supplémentaires sur la logique interne. Il y en a 201.
 - Un avis sur les choix de conception déjà tranchés et documentés
-  (`CONTEXT.md` §4, §4 bis, §4 ter). Ils ont leurs raisons ; conteste-les
+  (`docs/CONTEXT.md` §4, §4 bis, §4 ter). Ils ont leurs raisons ; conteste-les
   seulement si tu trouves qu'ils créent une faille, pas parce que tu ferais
   autrement.
 

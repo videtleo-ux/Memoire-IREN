@@ -1,6 +1,6 @@
 # CONTEXT.md — Contexte vivant du projet
 
-Dernière mise à jour : 2026-08-24. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `spec-build-arene-kuhn(1).md` et `prd/00-vue-densemble.md`.
+Dernière mise à jour : 2026-08-24. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `docs/spec-build-arene-kuhn.md` et `docs/prd/00-vue-densemble.md`.
 
 ## 1. Le projet en une phrase
 
@@ -28,7 +28,7 @@ Arène expérimentale pour un mémoire de M2 (IREN) : faire jouer un agent LLM �
 
 ## 4. Décisions de design prises en discussion (au-delà de la spec)
 
-Voir le tableau complet D1–D8 dans `prd/00-vue-densemble.md` §2. Les plus structurantes :
+Voir le tableau complet D1–D8 dans `docs/prd/00-vue-densemble.md` §2. Les plus structurantes :
 
 1. **Harnais unique `hermes -z` pour les 3 conditions**, outils désactivés — seul le slot mémoire varie.
 2. **Gel intra-session par snapshot/restauration fichiers** orchestré par l'arbitre.
@@ -113,7 +113,7 @@ Premier appel API réel du projet : 1 série, K = 20, Station, SM, `tencent/hy3:
 
 ## 4 sexies. Audit indépendant du 2026-08-22 — quatre constats, trois corrigés
 
-L'audit prévu par `AUDIT.md` a rendu quatre constats majeurs. Les quatre sont corrigés (220 tests verts, dont 19 nouveaux).
+L'audit prévu par `docs/AUDIT.md` a rendu quatre constats majeurs. Les quatre sont corrigés (220 tests verts, dont 19 nouveaux).
 
 **⚠️ Piège n°9 — C1, corrigé : le chemin du store fuit dans le prompt système.** Hermes insère `HERMES_HOME` en clair dans son prompt système, deux fois (« Current working directory » et « Active Hermes profile »), sans option pour l'éteindre. Un dossier `SM-station-r1` servait donc le nom du bot — « station » et « over-folder » énoncent l'exploitation — et la condition, à chaque manche, invisiblement (le prompt système n'est pas dans `vue_servie`, le raisonnement n'est jamais restitué, le détecteur ignore ces termes). Corrigé : le dossier d'un run est un code opaque dérivé, `run-<sha256(graine|run_id)[:12]>` (`arbitre.run.code_dossier`) ; le run_id reste dans chaque ligne de log, `etat_run.json` et le témoin d'isolation ; le marqueur du canari utilise le code opaque ; l'ancien nommage est refusé au démarrage. Conséquence rétroactive : les runs du pilote avaient tous « station » dans leur chemin — le « AE à 0,000 en une réflexion » est à revérifier après correctif.
 
@@ -157,16 +157,16 @@ Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL
 
 **24 exécutions, 177 séries, 26 550 manches, 27 290 décisions, 47,27 $.** Rejeu de complétude 24/24, intégrité 24/24, zéro action par défaut, zéro relance, zéro erreur de harnais, zéro rupture du gel. Résultats et inventaire complet des données : `memoire/resultats.md`.
 
-**H1, H2 et H3 sont établies.** L'écart AE tombe à 0,000 contre Station et Over-folder et s'y tient ; la référence récitée atteint exactement 7/9 et 1/9, les maxima théoriques de l'exploitation ; le contrôle négatif tient (référence récitée jamais positive contre GTO). H3 est vraie **sous condition** : AE bat ICL contre Station (+0,038 ± 0,015) mais pas contre Over-folder (+0,004 ± 0,006) — le mécanisme de rétention ne compte que là où la tâche exige une politique différenciée par carte. Et le mécanisme n'est pas celui qu'on attendait : la fenêtre ne produit aucun décrochage en dents de scie, et **les deux conditions chutent à la première frontière** — la vitesse ne les sépare pas. AE se verrouille ensuite sur zéro ; ICL s'arrête à un résidu non nul (~0,058 puis ~0,040) qu'il n'annule jamais. La différence porte sur la **complétude** de l'induction, ni sur la vitesse ni sur l'oubli : contre Station, ICL bluffe encore le sceau faible 7-9 % du temps après dix séries. Détail et décomposition dans `memoire/partie3.md` §3.4.
+**H1, H2 et H3 sont établies.** L'écart AE tombe à 0,000 contre Station et Over-folder et s'y tient ; la référence récitée atteint exactement 7/9 et 1/9, les maxima théoriques de l'exploitation ; le contrôle négatif tient (référence récitée jamais positive contre GTO). H3 est vraie **sous condition** : AE bat ICL contre Station (+0,038 ± 0,015) mais pas contre Over-folder (+0,004 ± 0,006) — le mécanisme de rétention ne compte que là où la tâche exige une politique différenciée par carte. Et le mécanisme n'est pas celui qu'on attendait : la fenêtre ne produit aucun décrochage en dents de scie, et **les deux conditions chutent à la première frontière** — la vitesse ne les sépare pas. AE se verrouille ensuite sur zéro ; ICL s'arrête à un résidu non nul (~0,058 puis ~0,040) qu'il n'annule jamais. La différence porte sur la **complétude** de l'induction, ni sur la vitesse ni sur l'oubli : contre Station, ICL bluffe encore le sceau faible 7-9 % du temps après dix séries. Détail et décomposition dans `memoire/partie3-v2.md` §3.4.
 
 **⚠️ Piège n°11 — les jetons de rafraîchissement Nous sont à usage unique.** Chaque store clonait `auth.json`, et Hermes place son magasin de jetons partagé **sous `HERMES_HOME`** : chaque run avait donc le sien, et passé l'heure de validité du jeton d'accès, tous rafraîchissaient avec la même copie. Le portail y a vu une réutilisation et a **révoqué la session entière** (« detected refresh-token reuse »). C'est ce qui a coupé l'authentification après la tranche SM+AE, et cela aurait cassé ICL en cours de route. Corrigé : `HERMES_SHARED_AUTH_DIR` désigne un magasin commun aux runs d'une racine (`<racine>/auth-partagee`), avec le verrou qu'Hermes prévoit pour ce cas. L'isolation mémoire n'est pas touchée — c'était l'identité qui était clonée à tort, pas `MEMORY.md`.
 
 **Deux mesures qui changent les projections.** Les journaux bruts pèsent **401 Mo** (le prompt ICL à fenêtre pleine fait 51 000 caractères, répété 1 500 fois par exécution) ; `donnees/decisions.csv` en est l'export sans les prompts, 55 fois plus léger. Et le coût réel d'une exécution ICL est de 4,71 $ (Over-folder) à 6,66 $ (Station) — les séries Station coûtent plus cher parce que l'agent y produit trois fois plus de raisonnement.
 
-**Analyse close le 2026-08-26.** H4 est instrumentée (`analyse/h4.py` → `memoire/h4-mesures.md`) : la règle d'incohérence pré-enregistrée s'est révélée invalide (47,8 % artefactuels, huit faux positifs sur huit relus), et la dégénérescence des mixtes livre le résultat central — 0 % de séries aux bornes sans mémoire, 56 % dès qu'une note est écrite, avec un contrôle interne (la série 0 d'une exécution AE, note encore vide, n'y est pas). La partie III est rédigée (`memoire/partie3.md`). Le codage manuel sur échantillon stratifié est écarté du périmètre.
+**Analyse close le 2026-08-26.** H4 est instrumentée (`analyse/h4.py` → `memoire/h4-mesures.md`) : la règle d'incohérence pré-enregistrée s'est révélée invalide (47,8 % artefactuels, huit faux positifs sur huit relus), et la dégénérescence des mixtes livre le résultat central — 0 % de séries aux bornes sans mémoire, 56 % dès qu'une note est écrite, avec un contrôle interne (la série 0 d'une exécution AE, note encore vide, n'y est pas). La partie III est rédigée (`memoire/partie3-v2.md`). Le codage manuel sur échantillon stratifié est écarté du périmètre.
 
 **Ce qui resterait, hors périmètre** : la vitesse d'adaptation (mal résolue par K = 150, le plateau tombant dès la série 1) et le profil d'oubli d'ICL (jamais observé à cet horizon). Les deux demanderaient un autre protocole, pas plus du même.
 
 ## 5. Où en est-on / où va-t-on
 
-L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).
+L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`docs/PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `docs/prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).
