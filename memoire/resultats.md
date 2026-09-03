@@ -361,10 +361,13 @@ moment par `python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv`.
 |---|---|
 | `memoire/methodologie.md` | **Chapitre 2 du mémoire** : hypothèses, protocole, instruments, validité interne. Autorité sur ce qui est mesuré et pourquoi. |
 | `memoire/resultats.md` | Ce document. |
-| `memoire/partie3.md` | **Partie III du mémoire**, rédigée : sections 3.1 à 3.7. |
-| `memoire/partie3-plan.md` | Plan de rédaction de la partie III : sept sections, chacune avec son objectif, ses paragraphes, ses pièces et ses précautions. |
+| `Mémoire Videt Léo.docx` | **Le mémoire remis** (racine du dépôt), terminé le 2026-08-30 : trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures. |
+| `memoire/introduction.md`, `memoire/conclusion.md`, `memoire/partie1-conclusion.md` | Introduction, conclusion et § 1.3.5, en source. |
+| `memoire/partie3-v2.md` | **Chapitre III du mémoire**, rédigé, dans la version restructurée du 27 août. |
+| `memoire/partie3-plan-v2.md` | Plan du chapitre III et décisions d'exposition. La première rédaction et son plan sont dans `memoire/archive/`. |
 | `memoire/h4-mesures.md` | **Les deux mesures automatiques de H4**, générées par `analyse/h4.py` : incohérence raisonnement↔action (et l'invalidité de la règle pré-enregistrée), dégénérescence des mixtes. |
-| `memoire/figures/` | Les deux figures de la partie III, générées par `analyse/figures.py`. |
+| `memoire/figures/` | Les 5 figures, générées par `analyse/R/analyse.R`. |
+| `memoire/tableaux/`, `memoire/tableaux-partie3.xlsx` | Les 10 tableaux en CSV et leur mise en forme Excel. |
 | `donnees/notes-ae.md` | Les 90 notes de l'agent, données qualitatives brutes. |
 | `spec-build-arene-kuhn(1).md` | Spécification d'origine — autorité sur *quoi* construire. |
 | `prd/00-vue-densemble.md` … `prd/04-logging-analyse.md` | Conception — autorité sur *comment*. Décisions transverses D1–D8, oracle analytique, schémas. |
@@ -398,15 +401,15 @@ identique, la campagne rejoue les mêmes cartes, manche pour manche.
 
 ## 8. Suite
 
-La collecte est close : les quatre hypothèses sont établies, et aucune exécution
-supplémentaire n'est requise pour les soutenir. Restent trois travaux, tous
-conduisibles sur les données déjà déposées.
+**Le travail est terminé.** La collecte est close, l'analyse est close, le mémoire
+est rédigé et mis en forme (`Mémoire Videt Léo.docx`, 2026-08-30). Aucune
+exécution supplémentaire n'est requise, et rien n'attend d'être écrit.
 
-1. **La rédaction de la partie III.** Les quatre hypothèses sont instrumentées,
-   H4 comprise (§2.6). Le plan de rédaction section par section est dans
-   `memoire/partie3-plan.md`. Reste, sur H4, le codage manuel sur échantillon
-   stratifié — écarté du périmètre : il précise le taux d'incohérence, il ne
-   change aucun résultat acquis.
+Ce qui suit relève d'un autre protocole, et a été écarté du périmètre :
+
+1. **Le codage manuel du raisonnement** sur échantillon stratifié — il préciserait
+   le taux d'incohérence de H4 sur les décisions que la mesure automatique ne
+   couvre pas ; il ne change aucun résultat acquis.
 2. **La vitesse d'adaptation**, qui est ce qui sépare AE d'ICL (§2.4) et que le
    plan actuel résout mal : le plateau AE est atteint dès la deuxième série. Des
    séries plus courtes la mesureraient mieux, à coût comparable.

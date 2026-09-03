@@ -1,14 +1,13 @@
 # PROGRESS.md — Suivi d'avancement
 
-Dernière mise à jour : 2026-08-26. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ attention.
+Dernière mise à jour : 2026-09-03. Convention : ✅ fait · 🔄 en cours · ⬜ à faire · ⚠️ attention.
 
 > **Pages en ligne** : [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) · [résultats](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b) · [plan de la partie III](https://claude.ai/code/artifact/79b11edd-7000-4027-a905-c296ee7bdadf) — les deux premières régénérables par `analyse/rendre-*.py`.
 >
-> **La collecte est close et l'analyse est terminée.** Les quatre hypothèses sont
-> instrumentées, la partie III est rédigée **et reportée dans le `.docx`**. Ce qui
-> reste est de la rédaction sur les autres chapitres et de la mise en forme —
-> détail dans l'audit du document plus bas. Résultats et inventaire des données :
-> `memoire/resultats.md`.
+> **Le projet est terminé.** Collecte close, analyse close, mémoire rédigé et mis
+> en forme : le document remis est `Mémoire Videt Léo.docx`, à la racine du dépôt.
+> Il ne reste ni collecte, ni analyse, ni rédaction — détail de la clôture plus
+> bas. Résultats et inventaire des données : `memoire/resultats.md`.
 
 ## Phase 0 — Cadrage (✅ 2026-08-19)
 
@@ -72,13 +71,15 @@ avant tout appel API.
 - ✅ Analyse qualitative du canal mémoire (90 notes intégrales dans `donnees/notes-ae.md`) — le canal n'encode **jamais** une fréquence : 0 pourcentage, 0 fraction, 0 proportion en toutes lettres sur 90 notes, contre 358 quantificateurs non chiffrés. C'est le mécanisme de la dégénérescence mesurée en H4.
 - ✅ **Conditionnalité en α énoncée** — l'équilibre de Kuhn est une famille à un paramètre ; le protocole en retient un membre (α = 1/3) sans l'avoir jamais dit. Vérifié : l'écart d'exploitation est α-libre, donc H1, H3 et l'énoncé central de H2 le sont aussi ; seule l'échelle de la référence récitée en dépend. Une phrase a dû être nuancée (« sans mémoire, l'agent est en dessous de l'équilibre » vaut à α = 1/3 ; à α = 0 il y serait exactement). Encadré ajouté au §2.2.2, sous-section 3.3.2 ajoutée à la partie III.
 
-## Phase 6 — Rédaction du mémoire (🔄 en cours)
+## Phase 6 — Rédaction du mémoire (✅ 2026-08-30)
 
 - ✅ **Partie III rédigée** — `memoire/partie3-v2.md`, sections 3.1 à 3.7, ~7 900 mots. Plan dans `memoire/partie3-plan.md`, figures dans `memoire/figures/`, export Word par `analyse/rendre-partie3-docx.py` → `memoire/partie3.docx`.
 - ✅ **Chapitre de méthode** — quatre corrections appliquées (§2.4 contrôle négatif énoncé comme un seul test ; §2.2.5.3 règle d'incohérence signalée invalide ; §2.2.3 SM n'est plus « le niveau récité » ; §2.2.9 point 2 du plan d'analyse). Plus l'encadré sur α.
 - ✅ **Partie III reportée dans le `.docx`** (2026-08-26, à la main) — sections 3.1 à 3.7 collées, les treize tableaux convertis en vraies tables Word, les deux figures insérées. Le document passe de 269 à 538 paragraphes et de 251 Ko à 766 Ko. Le chapitre 2 y est désormais complet jusqu'à la validité interne.
-- 🔄 **Ce qu'il reste à porter dans le `.docx`** — la sous-section 3.3.2 (conditionnalité en α) et les deux corrections du chapitre 2 listées au bas de `memoire/partie3-plan.md` ; plus l'audit ci-dessous.
-- ⬜ Rédaction des parties 1 et 4, préparation de la soutenance
+- ✅ **Report terminé** — la sous-section 3.3.2 (conditionnalité en α) et les corrections du chapitre 2 sont dans le document.
+- ✅ **Introduction, chapitre I et conclusion rédigés** ; sources dans `memoire/introduction.md`, `memoire/partie1-conclusion.md`, `memoire/conclusion.md`.
+- ✅ **Mise en forme finale (2026-08-30)** — chapitre 2 renuméroté en 2.1 / 2.2 / 2.3, bibliographie unifiée en auteur-date (39 entrées), renvois et Markdown résiduel purgés, 14 tableaux et 4 figures numérotés et légendés. **Document remis : `Mémoire Videt Léo.docx`** (racine du dépôt). Détail de la clôture plus bas.
+- ⬜ Préparation de la soutenance — hors dépôt.
 
 ### Où en est H4 — `analyse/h4.py`, rapport dans `memoire/h4-mesures.md`
 
@@ -108,39 +109,38 @@ avant tout appel API.
    ne couvre pas ; il ne change aucun résultat acquis. Limite assumée et rapportée
    comme telle en §3.6.1 et §3.6.3.
 
-## Audit du document du 2026-08-26 — ce qui reste à faire à la main
+## Clôture du document (2026-08-30)
 
-Le `.docx` complet a été relu et chaque chiffre recoupé contre `donnees/`.
-**Aucune erreur n'invalide un résultat** : les mesures tiennent, les tableaux de
-dimensionnement sont exacts, les effets appariés sont justes. Ce qui suit est de la
-rédaction et de la mise en forme, à la charge de Léo.
+L'audit du 2026-08-26 listait ce qui restait à faire à la main sur le `.docx` :
+bibliographie à deux systèmes, renvois croisés dans le vide, blocs absents,
+Markdown non converti, numérotation, placeholders, coquilles. **Tout a été traité.**
+Le document remis est `Mémoire Videt Léo.docx` (racine du dépôt), vérifié le
+2026-09-03 sur le fichier lui-même :
 
-**État après le report de la partie III** (vérifié sur le `.docx` de travail, non
-commité) : les placeholders `SOURCE`, `(mettre l'auteur)` et « I don't know » ont
-disparu ; la bibliographie a reçu quinze entrées numérotées `[1]`–`[15]`. Le reste
-du tableau tient toujours, et le collage a ajouté du Markdown brut.
-
-| Priorité | Constat |
+| Point de l'audit | État |
 |---|---|
-| 🔴 | **Bibliographie — partiellement traitée.** Quinze entrées numérotées `[1]`–`[15]` ont été ajoutées, mais les deux systèmes de citation coexistent toujours (numéroté et auteur-date), Loriente & Diez reste un placeholder, et 23 marqueurs `[188]`, `[305, 373]` d'un autre système traînent. Reste à vérifier les références citées et absentes (Borel 1938, Von Neumann 1928, Ferguson 2004, Reiley 2005/2008, Gao 2025, Wang 2023a, Packer 2024, Guan 2024) et les 6 jamais citées. |
-| 🔴 | **Tous les renvois croisés du chapitre 2 pointent dans le vide** — le document numérote 2.1 / 2.3.x / 2.5, le texte renvoie à §2.2.x. Idem §1.5.4 et §L.1. |
-| 🔴 | **Blocs toujours absents du `.docx`** — le plan d'analyse (§2.2.9, auquel la partie III renvoie deux fois), les trois paragraphes SM/ICL/AE de §2.3.3 (le tableau y est, pas le texte), les deux sous-sections d'audit, l'encadré sur α, et tout le bloc Limites (L.1, L.1 bis, L.2) — alors que la partie III y renvoie et que le document est titré « Résultats, limites et extensions ». La sous-section 3.3.2 de la partie III n'a pas été reportée non plus. |
-| 🟠 | **Markdown non converti — aggravé par le collage.** 538 lignes portent des accents graves (le code inline de la partie III est passé tel quel), 14 `**`, 19 lignes de tableau en tubes, un `M<sub>s</sub>`, un `## 2.5`. Le tableau de validité interne est toujours entièrement en Markdown brut. |
-| 🟠 | **Numérotation** — 2.2 et 2.4 n'existent toujours pas ; deux « Tableau 3 » ; les 5 légendes disent encore « Titre, Lecture » ; les 13 tableaux de la partie III, désormais collés, n'ont ni numéro ni légende. |
-| 🟡 | **Placeholders — partiellement traités.** `SOURCE`, `(mettre l'auteur)` et « I don't know » ont disparu. Restent `tttt`, « Phrase de transition » ×2, « nanianninain… ». |
-| 🟡 | Coquilles récurrentes (« comportemental » pour « comportementale », « sillicus », « Poket de Khun », « Von Neumannen »), page de garde qui tronque la question de recherche, partie III titrée « Résultats, limites et extensions » alors qu'elle ne contient que les résultats. |
+| Bibliographie | ✅ un seul système, auteur-date APA, 39 entrées ; Loriente & Diez (2023) n'est plus un placeholder ; plus aucun marqueur `[188]` d'un autre système |
+| Renvois croisés | ✅ plus aucun renvoi `§2.2.x` orphelin — le chapitre 2 a été renuméroté en 2.1 / 2.2 / 2.3 et les renvois supprimés au profit du texte |
+| Blocs absents | ✅ le chapitre II est complet (2.1 hypothèses et instruments, 2.2 Hermès, 2.3 dispositif) ; la partie III va de 3.1 à 3.3.3, 3.3.2 comprise ; les limites et les extensions sont énoncées dans la conclusion |
+| Markdown brut | ✅ plus d'accents graves de code inline, plus de `**`, plus de lignes en tubes, plus de `<sub>` ni de `##` |
+| Numérotation | ✅ 14 tableaux et 4 figures, numérotés en continu et légendés ; plus de doublon de numéro |
+| Placeholders | ✅ `tttt`, « Phrase de transition », « nanianninain » : tous levés |
+| Titre de la partie III | ✅ « Résultats et analyses », conforme au contenu |
 
-**Trois erreurs de chiffres relevées dans la partie III et corrigées** : notes de
-333 à 1 906 caractères (et non 377 à 1 561, qui contredisait §3.5.1) ; cent
-cinquante engagements par série (et non trois cents, vérifié sur
-`decisions.csv`) ; contrôle négatif sur trente-neuf séries (et non trente, qui
-contredisait §3.3.1).
+Restent deux détails de forme sans effet sur le fond, à la main de Léo s'il veut :
+« Etat de l'art » et « Poker de Khun » dans le sommaire (accent et coquille), et
+deux phrases successives ouvrant sur « À la seconde branche » dans la conclusion,
+dont la première est un reliquat.
+
+Rappel de l'audit du 2026-08-26 : **aucune erreur n'invalidait un résultat**, et
+les trois chiffres relevés dans la partie III (notes de 333 à 1 906 caractères ;
+cent cinquante engagements par série ; contrôle négatif sur trente-neuf séries)
+ont été corrigés avant le report.
 
 ## ⚠️ Points ouverts
 
 | Point | Porteur | Impact |
 |---|---|---|
-| Papier Loriente & Diez à transmettre | Léo | Aucun sur les résultats ; manque un recoupement citable |
 | GTO non joué en condition ICL | — | Arbitrage assumé (§2.2.7) ; la vérification qu'ICL ne bat pas l'équilibre contre l'équilibre n'a pas été faite |
 | Profil d'oubli d'ICL jamais observé | — | La fenêtre n'a pas produit de décrochage à cet horizon ; demanderait un autre protocole, pas plus du même |
 
@@ -166,3 +166,5 @@ ce qui supprime aussi le test d'effet-machine (sans objet).
 | 2026-08-26 | Deux incohérences de rédaction corrigées : `partie3-plan.md` disait 41 % là où le chiffre arrêté est 38 % ; dans `partie3.md`, 3.3.2 précédait 3.3.1 — ordre rétabli, renvois internes ajustés. |
 | 2026-08-26 | **Report de la partie III dans le `.docx`** par Léo : 3.1 à 3.7, treize tableaux en tables Word, deux figures ; le document double de volume. Bibliographie amorcée (15 entrées), trois placeholders levés. Modifications non commitées. |
 | 2026-08-26 | **Audit complet du `.docx`** : aucune erreur invalidante, trois chiffres corrigés, la conditionnalité en α énoncée dans les deux chapitres. Le reste de l'audit (bibliographie, renvois, blocs manquants) est traité à la main par Léo. |
+| 2026-08-30 | **Mémoire terminé.** Chapitre 2 renuméroté et complété, bibliographie unifiée en auteur-date, renvois et Markdown résiduel purgés, tableaux et figures numérotés. Document remis : `Mémoire Videt Léo.docx`. |
+| 2026-09-03 | Documents du dépôt alignés sur l'état final ; le `.docx` remis est versionné. |

@@ -23,17 +23,22 @@ sont pas produits ici mais par le dispositif :
 PYTHONPATH=src python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv
 ```
 
-## Ce qui reste à écrire — H4
+## H4 — mesuré, `h4.py`
 
-Deux mesures automatiques, sur données déjà déposées :
+Les deux mesures automatiques ont été produites et versées au mémoire
+(`memoire/h4-mesures.md`) :
 
-1. **Incohérence raisonnement↔action.** Comparer l'action de la ligne `ACTION:` à
-   la dernière action nommée dans le texte libre qui la précède ; la logique existe
-   dans `harnais.parsing`. Porte sur les **13 466 décisions (49,3 %)** qui
-   comportent un texte au-delà de la ligne d'action. ⚠️ Le sous-ensemble n'est pas
-   aléatoire — 28 % en SM, 36 % en ICL, 64 % en AE — et le taux obtenu est une
-   borne inférieure sur un échantillon sélectionné.
-2. **Dégénérescence des mixtes.** Concentration de `p` aux bornes, depuis
-   `donnees/infosets.csv`. ⚠️ **Ventiler par adversaire** : contre Station et
-   Over-folder la meilleure réponse *est* pure, y être n'est pas un biais. Le signal
-   est contre GTO, où l'équilibre exige du mixte.
+1. **Incohérence raisonnement↔action.** L'action de la ligne `ACTION:` comparée à
+   la dernière action nommée dans le texte libre qui la précède. La règle
+   pré-enregistrée s'est révélée **invalide** (47,8 % d'appariements artefactuels,
+   huit faux positifs sur huit relus) ; elle a été resserrée aux décisions où
+   l'agent énonce son choix en toutes lettres — 604 décisions, aucune divergence.
+   La portée est étroite et énoncée comme telle : 2,2 % de la campagne, sur un
+   sous-ensemble sélectionné.
+2. **Dégénérescence des mixtes**, depuis `donnees/infosets.csv`, ventilée par
+   adversaire — contre Station et Over-folder la meilleure réponse *est* pure, le
+   signal est contre GTO. Résultat : 0 % de séries aux bornes sans mémoire, 56 %
+   dès qu'une note est écrite, avec un contrôle interne (la série 0 d'une
+   exécution AE, note encore vide, n'y est pas).
+
+Le codage manuel sur échantillon stratifié a été écarté du périmètre.

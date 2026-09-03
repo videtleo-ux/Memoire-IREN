@@ -1,6 +1,6 @@
 # CONTEXT.md — Contexte vivant du projet
 
-Dernière mise à jour : 2026-08-24. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `docs/spec-build-arene-kuhn.md` et `docs/prd/00-vue-densemble.md`.
+Dernière mise à jour : 2026-09-03. Ce fichier capture tout ce qui n'est **pas** dans la spec ni dans les PRD : les décisions prises en discussion avec le pilote, les découvertes d'environnement, et les contraintes réelles. À relire en début de toute session de travail, avec `docs/spec-build-arene-kuhn.md` et `docs/prd/00-vue-densemble.md`.
 
 ## 1. Le projet en une phrase
 
@@ -13,7 +13,7 @@ Arène expérimentale pour un mémoire de M2 (IREN) : faire jouer un agent LLM �
 - **Machines** : Victus Windows 11 (i5-12e gén, RTX 3050 4 Go, 16 Go RAM) — machine principale, Hermes Agent installé et authentifié ; Mac M2 8 Go — Hermes **pas encore installé** (point ouvert).
 - **Stack** : Python 3.11 (installé sur le Victus). Analyse finale Python et/ou R. Logs JSONL (source de vérité) + CSV dérivé, centralisés via Git.
 - **Hors périmètre confirmé** : bras transfert, bras humain, adversaire LLM figé (§11 spec). Pas de contraintes éthiques/confidentialité sur le build primaire.
-- Le papier **Loriente & Diez** est en possession de Léo, pas encore transmis — non bloquant (cf. décision D6).
+- Le papier **Loriente & Diez** (2023) est cité dans la bibliographie finale ; la constante GTO contestée avait de toute façon été tranchée par l'oracle analytique (couverture J1-Vael = 2/3 à α = 1/3). Point clos.
 
 ## 3. Découvertes d'environnement (vérifiées sur machine, 2026-08-19)
 
@@ -168,5 +168,7 @@ Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL
 **Ce qui resterait, hors périmètre** : la vitesse d'adaptation (mal résolue par K = 150, le plateau tombant dès la série 1) et le profil d'oubli d'ICL (jamais observé à cet horizon). Les deux demanderaient un autre protocole, pas plus du même.
 
 ## 5. Où en est-on / où va-t-on
+
+**Projet terminé (2026-08-30).** Collecte close le 24 août, analyse close le 26 août, mémoire rédigé et mis en forme : le document remis est `Mémoire Videt Léo.docx`, à la racine du dépôt. Il ne reste ni collecte, ni analyse, ni rédaction. Le dépôt est en état de dépôt d'archive : le code, les données et les sources des chapitres y sont, et `REPLICATION.md` refait les analyses depuis `donnees/` sans appel API.
 
 L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`docs/PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `docs/prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).

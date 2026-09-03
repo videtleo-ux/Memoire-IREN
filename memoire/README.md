@@ -6,10 +6,13 @@ et les exports, et à retrouver l'origine de chaque chiffre.
 
 ## Le document
 
+Le mémoire est **terminé** (2026-08-30). Les `.docx` vivent à la racine du dépôt :
+
 | Fichier | |
 |---|---|
-| `Master Industries de Réseau et Economie Numérique - restructure.docx` | **le mémoire remis** |
-| `Master Industries de Réseau et Economie Numérique.docx` | version antérieure à la restructuration, conservée comme référence |
+| [`../Mémoire Videt Léo.docx`](../Mémoire%20Videt%20L%C3%A9o.docx) | **le mémoire remis** — trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures |
+| `../Master Industries de Réseau et Economie Numérique - restructure.docx` | état du 29 août, avant la mise en forme finale |
+| `../Master Industries de Réseau et Economie Numérique.docx` | version antérieure à la restructuration, conservée comme référence |
 
 ## Les chapitres, en source
 
