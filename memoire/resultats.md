@@ -361,7 +361,7 @@ moment par `python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv`.
 |---|---|
 | `memoire/methodologie.md` | **Chapitre 2 du mémoire** : hypothèses, protocole, instruments, validité interne. Autorité sur ce qui est mesuré et pourquoi. |
 | `memoire/resultats.md` | Ce document. |
-| `Mémoire Videt Léo.docx` | **Le mémoire remis** (racine du dépôt), terminé le 2026-08-30 : trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures. |
+| `Mémoire Videt Léo IREN.pdf` | **Le mémoire remis** (racine du dépôt), envoyé au directeur le 2026-08-31 : trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures. Le `.docx` source est à côté. |
 | `memoire/introduction.md`, `memoire/conclusion.md`, `memoire/partie1-conclusion.md` | Introduction, conclusion et § 1.3.5, en source. |
 | `memoire/partie3-v2.md` | **Chapitre III du mémoire**, rédigé, dans la version restructurée du 27 août. |
 | `memoire/partie3-plan-v2.md` | Plan du chapitre III et décisions d'exposition. La première rédaction et son plan sont dans `memoire/archive/`. |
@@ -401,8 +401,8 @@ identique, la campagne rejoue les mêmes cartes, manche pour manche.
 
 ## 8. Suite
 
-**Le travail est terminé.** La collecte est close, l'analyse est close, le mémoire
-est rédigé et mis en forme (`Mémoire Videt Léo.docx`, 2026-08-30). Aucune
+**Le travail est terminé et le mémoire est remis** (`Mémoire Videt Léo IREN.pdf`,
+envoyé au directeur le 2026-08-31). Aucune
 exécution supplémentaire n'est requise, et rien n'attend d'être écrit.
 
 Ce qui suit relève d'un autre protocole, et a été écarté du périmètre :

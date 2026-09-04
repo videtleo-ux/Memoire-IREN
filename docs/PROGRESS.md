@@ -4,10 +4,11 @@ Dernière mise à jour : 2026-09-03. Convention : ✅ fait · 🔄 en cours · �
 
 > **Pages en ligne** : [chapitre de méthode](https://claude.ai/code/artifact/9c6cc820-7c44-4eac-a360-a69450d35ef5) · [résultats](https://claude.ai/code/artifact/40a26434-ed5f-4640-a651-d0cde8964a0b) · [plan de la partie III](https://claude.ai/code/artifact/79b11edd-7000-4027-a905-c296ee7bdadf) — les deux premières régénérables par `analyse/rendre-*.py`.
 >
-> **Le projet est terminé.** Collecte close, analyse close, mémoire rédigé et mis
-> en forme : le document remis est `Mémoire Videt Léo.docx`, à la racine du dépôt.
-> Il ne reste ni collecte, ni analyse, ni rédaction — détail de la clôture plus
-> bas. Résultats et inventaire des données : `memoire/resultats.md`.
+> **Le projet est terminé et le mémoire est remis** (envoyé au directeur le
+> 2026-08-31). Le document remis est `Mémoire Videt Léo IREN.pdf`, à la racine du
+> dépôt, avec son `.docx` source. Il ne reste ni collecte, ni analyse, ni
+> rédaction — détail de la clôture plus bas. Résultats et inventaire des données :
+> `memoire/resultats.md`.
 
 ## Phase 0 — Cadrage (✅ 2026-08-19)
 
@@ -78,7 +79,8 @@ avant tout appel API.
 - ✅ **Partie III reportée dans le `.docx`** (2026-08-26, à la main) — sections 3.1 à 3.7 collées, les treize tableaux convertis en vraies tables Word, les deux figures insérées. Le document passe de 269 à 538 paragraphes et de 251 Ko à 766 Ko. Le chapitre 2 y est désormais complet jusqu'à la validité interne.
 - ✅ **Report terminé** — la sous-section 3.3.2 (conditionnalité en α) et les corrections du chapitre 2 sont dans le document.
 - ✅ **Introduction, chapitre I et conclusion rédigés** ; sources dans `memoire/introduction.md`, `memoire/partie1-conclusion.md`, `memoire/conclusion.md`.
-- ✅ **Mise en forme finale (2026-08-30)** — chapitre 2 renuméroté en 2.1 / 2.2 / 2.3, bibliographie unifiée en auteur-date (39 entrées), renvois et Markdown résiduel purgés, 14 tableaux et 4 figures numérotés et légendés. **Document remis : `Mémoire Videt Léo.docx`** (racine du dépôt). Détail de la clôture plus bas.
+- ✅ **Mise en forme finale (2026-08-30)** — chapitre 2 renuméroté en 2.1 / 2.2 / 2.3, bibliographie unifiée en auteur-date (39 entrées), renvois et Markdown résiduel purgés, 14 tableaux et 4 figures numérotés et légendés. Détail de la clôture plus bas.
+- ✅ **Relecture de forme et remise (2026-08-31)** — coquilles du sommaire et des titres corrigées, reliquat de phrase supprimé dans la conclusion, page de garde et signature reprises. **Document envoyé au directeur : `Mémoire Videt Léo IREN.pdf`**, versionné avec son `.docx` source.
 - ⬜ Préparation de la soutenance — hors dépôt.
 
 ### Où en est H4 — `analyse/h4.py`, rapport dans `memoire/h4-mesures.md`
@@ -114,8 +116,8 @@ avant tout appel API.
 L'audit du 2026-08-26 listait ce qui restait à faire à la main sur le `.docx` :
 bibliographie à deux systèmes, renvois croisés dans le vide, blocs absents,
 Markdown non converti, numérotation, placeholders, coquilles. **Tout a été traité.**
-Le document remis est `Mémoire Videt Léo.docx` (racine du dépôt), vérifié le
-2026-09-03 sur le fichier lui-même :
+Le document remis est `Mémoire Videt Léo IREN.pdf` (racine du dépôt), vérifié
+sur le fichier lui-même :
 
 | Point de l'audit | État |
 |---|---|
@@ -127,10 +129,11 @@ Le document remis est `Mémoire Videt Léo.docx` (racine du dépôt), vérifié 
 | Placeholders | ✅ `tttt`, « Phrase de transition », « nanianninain » : tous levés |
 | Titre de la partie III | ✅ « Résultats et analyses », conforme au contenu |
 
-Restent deux détails de forme sans effet sur le fond, à la main de Léo s'il veut :
-« Etat de l'art » et « Poker de Khun » dans le sommaire (accent et coquille), et
-deux phrases successives ouvrant sur « À la seconde branche » dans la conclusion,
-dont la première est un reliquat.
+Les trois détails de forme relevés le 2026-09-03 sur la version de travail sont
+corrigés dans la version remise : « État de l'art », « Poker de Kuhn / jeux à
+information imparfaite », et le reliquat de phrase dans la conclusion. La relecture
+a aussi corrigé « Machine Behavior », « AI Agent Behavior », « Économie numérique »
+sur la page de garde et la signature.
 
 Rappel de l'audit du 2026-08-26 : **aucune erreur n'invalidait un résultat**, et
 les trois chiffres relevés dans la partie III (notes de 333 à 1 906 caractères ;
@@ -166,5 +169,7 @@ ce qui supprime aussi le test d'effet-machine (sans objet).
 | 2026-08-26 | Deux incohérences de rédaction corrigées : `partie3-plan.md` disait 41 % là où le chiffre arrêté est 38 % ; dans `partie3.md`, 3.3.2 précédait 3.3.1 — ordre rétabli, renvois internes ajustés. |
 | 2026-08-26 | **Report de la partie III dans le `.docx`** par Léo : 3.1 à 3.7, treize tableaux en tables Word, deux figures ; le document double de volume. Bibliographie amorcée (15 entrées), trois placeholders levés. Modifications non commitées. |
 | 2026-08-26 | **Audit complet du `.docx`** : aucune erreur invalidante, trois chiffres corrigés, la conditionnalité en α énoncée dans les deux chapitres. Le reste de l'audit (bibliographie, renvois, blocs manquants) est traité à la main par Léo. |
-| 2026-08-30 | **Mémoire terminé.** Chapitre 2 renuméroté et complété, bibliographie unifiée en auteur-date, renvois et Markdown résiduel purgés, tableaux et figures numérotés. Document remis : `Mémoire Videt Léo.docx`. |
-| 2026-09-03 | Documents du dépôt alignés sur l'état final ; le `.docx` remis est versionné. |
+| 2026-08-30 | **Mémoire terminé.** Chapitre 2 renuméroté et complété, bibliographie unifiée en auteur-date, renvois et Markdown résiduel purgés, tableaux et figures numérotés. |
+| 2026-08-31 | Relecture de forme, export PDF, **mémoire envoyé au directeur**. |
+| 2026-09-03 | Documents du dépôt alignés sur l'état final. |
+| 2026-09-04 | Le document remis (`Mémoire Videt Léo IREN.pdf` + `.docx`) est versionné ; il remplace la version de travail du 30 août. |

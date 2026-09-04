@@ -6,11 +6,13 @@ et les exports, et à retrouver l'origine de chaque chiffre.
 
 ## Le document
 
-Le mémoire est **terminé** (2026-08-30). Les `.docx` vivent à la racine du dépôt :
+Le mémoire est **terminé et remis** (envoyé au directeur le 2026-08-31). Les
+documents vivent à la racine du dépôt :
 
 | Fichier | |
 |---|---|
-| [`../Mémoire Videt Léo.docx`](../Mémoire%20Videt%20L%C3%A9o.docx) | **le mémoire remis** — trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures |
+| [`../Mémoire Videt Léo IREN.pdf`](../M%C3%A9moire%20Videt%20L%C3%A9o%20IREN.pdf) | **le mémoire remis** — trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures |
+| `../Mémoire Videt Léo IREN.docx` | le `.docx` source du PDF ci-dessus |
 | `../Master Industries de Réseau et Economie Numérique - restructure.docx` | état du 29 août, avant la mise en forme finale |
 | `../Master Industries de Réseau et Economie Numérique.docx` | version antérieure à la restructuration, conservée comme référence |
 

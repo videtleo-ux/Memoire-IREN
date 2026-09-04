@@ -169,6 +169,6 @@ Contre 41–63 $ annoncés : ×1,5 à ×2,2, porté à ~90 % par les séries ICL
 
 ## 5. Où en est-on / où va-t-on
 
-**Projet terminé (2026-08-30).** Collecte close le 24 août, analyse close le 26 août, mémoire rédigé et mis en forme : le document remis est `Mémoire Videt Léo.docx`, à la racine du dépôt. Il ne reste ni collecte, ni analyse, ni rédaction. Le dépôt est en état de dépôt d'archive : le code, les données et les sources des chapitres y sont, et `REPLICATION.md` refait les analyses depuis `donnees/` sans appel API.
+**Projet terminé, mémoire remis (2026-08-31).** Collecte close le 24 août, analyse close le 26 août, mémoire rédigé, mis en forme et **envoyé au directeur** : le document remis est `Mémoire Videt Léo IREN.pdf`, à la racine du dépôt, avec son `.docx` source. Il ne reste ni collecte, ni analyse, ni rédaction. Le dépôt est en état de dépôt d'archive : le code, les données et les sources des chapitres y sont, et `REPLICATION.md` refait les analyses depuis `donnees/` sans appel API.
 
 L'état d'avancement détaillé (tâches, jalons, prochaine action) vit dans **`docs/PROGRESS.md`** — ce fichier-ci ne le duplique pas. Structure cible du dépôt : `docs/prd/` (00 à 04), puis `src/` (moteur, harnais, arbitre, analyse), `tests/`, `runs/` (hors OneDrive, symlink ou chemin configuré).
