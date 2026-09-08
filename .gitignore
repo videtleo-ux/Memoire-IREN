@@ -21,3 +21,6 @@ Thumbs.db
 
 # Fichiers de verrouillage Office (créés quand un document est ouvert)
 ~$*
+
+# Aperçus PNG de la soutenance — dérivés, régénérés par scripts/soutenance/rendre.py
+scripts/soutenance/apercu/
