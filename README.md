@@ -24,6 +24,7 @@ simulation ni intervalle de confiance sur l'instrument.
 | Vous voulez… | Allez à |
 |---|---|
 | **lire le mémoire** | **[`Mémoire Videt Léo IREN.pdf`](M%C3%A9moire%20Videt%20L%C3%A9o%20IREN.pdf)** — le document remis ; les chapitres en source sont dans [`memoire/`](memoire/) |
+| voir le support de soutenance | [`Soutenance.pdf`](Soutenance.pdf) |
 | voir les résultats et l'inventaire complet des données | [`memoire/resultats.md`](memoire/resultats.md) |
 | **reproduire les analyses** à partir des données | **[`REPLICATION.md`](REPLICATION.md)** |
 | comprendre l'architecture du dispositif | [§ Architecture](#architecture) ci-dessous |

@@ -1,6 +1,6 @@
 # memoire/ — le mémoire et ses pièces
 
-Le document remis est le `.docx`. Le Markdown de ce dossier est la **source** des
+Le document remis est le PDF. Le Markdown de ce dossier est la **source** des
 chapitres rédigés avec assistance : il sert à régénérer les figures, les tableaux
 et les exports, et à retrouver l'origine de chaque chiffre.
 
@@ -12,8 +12,7 @@ documents vivent à la racine du dépôt :
 | Fichier | |
 |---|---|
 | [`../Mémoire Videt Léo IREN.pdf`](../M%C3%A9moire%20Videt%20L%C3%A9o%20IREN.pdf) | **le mémoire remis** — trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures |
-| `../Mémoire Videt Léo IREN.docx` | le `.docx` source du PDF ci-dessus |
-| `../Soutenance.pptx` | le support de soutenance |
+| [`../Soutenance.pdf`](../Soutenance.pdf) | le support de soutenance |
 
 ## Les chapitres, en source
 

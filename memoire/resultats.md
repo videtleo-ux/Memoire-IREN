@@ -361,7 +361,8 @@ moment par `python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv`.
 |---|---|
 | `memoire/methodologie.md` | **Chapitre 2 du mémoire** : hypothèses, protocole, instruments, validité interne. Autorité sur ce qui est mesuré et pourquoi. |
 | `memoire/resultats.md` | Ce document. |
-| `Mémoire Videt Léo IREN.pdf` | **Le mémoire remis** (racine du dépôt), envoyé au directeur le 2026-08-31 : trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures. Le `.docx` source est à côté. |
+| `Mémoire Videt Léo IREN.pdf` | **Le mémoire remis** (racine du dépôt), envoyé au directeur le 2026-08-31 : trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures. |
+| `Soutenance.pdf` | Le support de la soutenance (racine du dépôt). |
 | `memoire/introduction.md`, `memoire/conclusion.md`, `memoire/partie1-conclusion.md` | Introduction, conclusion et § 1.3.5, en source. |
 | `memoire/partie3-v2.md` | **Chapitre III du mémoire**, rédigé, dans la version restructurée du 27 août. |
 | `memoire/partie3-plan-v2.md` | Plan du chapitre III et décisions d'exposition. La première rédaction et son plan sont dans l'historique Git. |

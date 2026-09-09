@@ -27,3 +27,9 @@ scripts/soutenance/apercu/
 
 # Consignes locales de travail sur le depot (hors depot depuis la cloture)
 CLAUDE.md
+
+# Sources editables des livrables : le depot ne publie que les PDF.
+# Elles restent en local (et dans l historique Git avant la cloture).
+M*moire Videt L*o IREN.docx
+Soutenance.pptx
+scripts/soutenance/
