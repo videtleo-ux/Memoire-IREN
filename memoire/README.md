@@ -13,8 +13,7 @@ documents vivent à la racine du dépôt :
 |---|---|
 | [`../Mémoire Videt Léo IREN.pdf`](../M%C3%A9moire%20Videt%20L%C3%A9o%20IREN.pdf) | **le mémoire remis** — trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures |
 | `../Mémoire Videt Léo IREN.docx` | le `.docx` source du PDF ci-dessus |
-| `../Master Industries de Réseau et Economie Numérique - restructure.docx` | état du 29 août, avant la mise en forme finale |
-| `../Master Industries de Réseau et Economie Numérique.docx` | version antérieure à la restructuration, conservée comme référence |
+| `../Soutenance.pptx` | le support de soutenance |
 
 ## Les chapitres, en source
 
@@ -39,8 +38,9 @@ documents vivent à la racine du dépôt :
 
 Figures et tableaux sont **régénérables** : voir [`../REPLICATION.md`](../REPLICATION.md).
 
-## `archive/`
+## Versions antérieures
 
-Versions dépassées, conservées pour la traçabilité : la première rédaction de la
-partie III et son plan, remplacés le 27 août 2026 par une restructuration de
-l'exposition qui ne change aucun résultat.
+Les états intermédiaires du mémoire — la première rédaction de la partie III, son
+plan, et les `.docx` antérieurs à la mise en forme finale — ne sont plus dans
+l'arborescence : ils restent accessibles dans l'historique Git, avant le commit de
+clôture. La restructuration du 27 août 2026 ne change aucun résultat.

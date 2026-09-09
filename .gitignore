@@ -24,3 +24,6 @@ Thumbs.db
 
 # Aperçus PNG de la soutenance — dérivés, régénérés par scripts/soutenance/rendre.py
 scripts/soutenance/apercu/
+
+# Consignes locales de travail sur le depot (hors depot depuis la cloture)
+CLAUDE.md

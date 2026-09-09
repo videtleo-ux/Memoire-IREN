@@ -364,7 +364,7 @@ moment par `python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv`.
 | `Mémoire Videt Léo IREN.pdf` | **Le mémoire remis** (racine du dépôt), envoyé au directeur le 2026-08-31 : trois chapitres, conclusion, bibliographie, 14 tableaux, 4 figures. Le `.docx` source est à côté. |
 | `memoire/introduction.md`, `memoire/conclusion.md`, `memoire/partie1-conclusion.md` | Introduction, conclusion et § 1.3.5, en source. |
 | `memoire/partie3-v2.md` | **Chapitre III du mémoire**, rédigé, dans la version restructurée du 27 août. |
-| `memoire/partie3-plan-v2.md` | Plan du chapitre III et décisions d'exposition. La première rédaction et son plan sont dans `memoire/archive/`. |
+| `memoire/partie3-plan-v2.md` | Plan du chapitre III et décisions d'exposition. La première rédaction et son plan sont dans l'historique Git. |
 | `memoire/h4-mesures.md` | **Les deux mesures automatiques de H4**, générées par `analyse/h4.py` : incohérence raisonnement↔action (et l'invalidité de la règle pré-enregistrée), dégénérescence des mixtes. |
 | `memoire/figures/` | Les 5 figures, générées par `analyse/R/analyse.R`. |
 | `memoire/tableaux/`, `memoire/tableaux-partie3.xlsx` | Les 10 tableaux en CSV et leur mise en forme Excel. |
@@ -373,8 +373,6 @@ moment par `python -m journal.derives C:/arene-runs --sortie C:/arene-runs/csv`.
 | `prd/00-vue-densemble.md` … `prd/04-logging-analyse.md` | Conception — autorité sur *comment*. Décisions transverses D1–D8, oracle analytique, schémas. |
 | `CONTEXT.md` | Contexte vivant : découvertes d'environnement, pièges n°1 à n°10, décisions de discussion, calibrage, enveloppes recalculées. |
 | `AUDIT.md` | Cahier des charges de l'audit adversarial pré-campagne. |
-| `PROGRESS.md` | État d'avancement phase par phase. |
-| `CLAUDE.md` | Consignes de travail sur le dépôt. |
 | `README.md` | Présentation du dépôt. |
 
 ## 7. Reproduire

@@ -169,7 +169,7 @@ l'agent retient, ce qu'il supprime, et ce qu'il n'écrit jamais — une fréquen
 | [`analyse/`](analyse/) | les scripts qui dérivent tout le reste ([README](analyse/README.md)) |
 | [`analyse/R/`](analyse/R/) | le second chemin de calcul, indépendant du Python |
 | [`memoire/`](memoire/) | le mémoire, ses figures, ses tableaux |
-| [`docs/`](docs/) | spécification d'origine, PRD, contexte, brief d'audit, avancement |
+| [`docs/`](docs/) | spécification d'origine, PRD, contexte, brief d'audit |
 | [`scripts/`](scripts/) | lancement de campagne |
 
 Aucun script d'analyse ne produit de donnée : tous **dérivent** ce qui existe déjà

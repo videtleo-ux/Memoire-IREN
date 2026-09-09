@@ -147,7 +147,6 @@ Trois propriétés dont la violation serait invisible :
 | Spécification (autorité sur le *quoi*) | `docs/spec-build-arene-kuhn.md` |
 | Conception (autorité sur le *comment*) | `prd/00` à `prd/04` |
 | **Contexte vivant, pièges connus** | **`docs/CONTEXT.md` — à lire en premier** |
-| État d'avancement | `docs/PROGRESS.md` |
 | Chapitre de méthode du mémoire | `memoire/methodologie.md` |
 | Journaux d'exécutions réelles | `C:\arene-runs-k200`, `-luna`, `-icl`, `-ae`, `-medium` |
 
